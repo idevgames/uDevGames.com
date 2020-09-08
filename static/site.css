@@ -1,0 +1,23 @@
+/* you know what would be rad? if this could be scss... */
+
+body {
+  background-color: rgb(48, 48, 48);
+  color: rgb(255, 255, 255);
+}
+
+header {
+  /* so cmd-r's little fingers can hang over the edge of the page a little */
+  position: relative;
+  bottom: -8px;
+  z-index: 1;
+}
+
+#idg-img {
+  background: url("/static/udevgames_logo.png") no-repeat;
+  height: 85px;
+  width: 357px;
+}
+
+footer {
+  text-align: center;
+}

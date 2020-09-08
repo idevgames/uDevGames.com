@@ -1,0 +1,7 @@
+{% extends "layout" %}
+{% block content %}
+  <div class="card text-dark bg-light shadow">
+    <h4 class="card-header">Login?</h4>
+    Did it work?
+  </div>
+{% endblock %}

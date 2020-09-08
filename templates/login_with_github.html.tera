@@ -1,0 +1,15 @@
+{% extends "layout" %}
+{% block content %}
+  <div class="card text-dark bg-light shadow">
+    <h4 class="card-header">Login</h4>
+    <p>
+      Because we have precisely zero interest in storing your password, please
+      log in with one of the following OAuth providers to establish an identity
+      on this site.
+    </p>
+    <a href="{{ oauth_url }}" class="btn btn-lrg btn-primary btn-block"
+        tabindex="-1" role="button">
+      Login with GitHub
+    </a>
+  </div>
+{% endblock %}

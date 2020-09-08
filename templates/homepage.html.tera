@@ -1,0 +1,14 @@
+{% extends "layout" %}
+{% block content %}
+  <div class="card text-dark bg-light shadow">
+    <h4 class="card-header">Hello, world!</h4>
+    <br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
+    <br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
+    <br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
+    <br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
+    <br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
+    <p>
+      .
+    </p>
+  </div>
+{% endblock %}

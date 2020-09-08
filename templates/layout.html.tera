@@ -1,0 +1,13 @@
+{% extends "skeleton" %}
+{% block skeleton_content %}
+  <header class="container">
+    <div id="idg-img"></div>
+  </header>
+  <article class="container">
+    {% block content %}
+    {% endblock %}
+  </article>
+  <footer class="container">
+    &copy; 1998 - {{ now() | date(format='%Y') }} iDevGames.
+  </footer>
+{% endblock %}
