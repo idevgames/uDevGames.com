@@ -20,7 +20,7 @@ async fn main() {
     dotenv().ok();
 
     let database_path = expect_env_string("APP_DATABASE_PATH");
-    let connection_manager = crate::db::get_manager(&database_path);
+    let db_pool = crate::db::get_pool(&database_path);
 
     // should we migrate?
     
@@ -35,7 +35,7 @@ async fn main() {
         expect_env_string("UDEVGAMES_APP_ADDRESS"),
         expect_env_u16("UDEVGAMES_APP_PORT"),
         expect_env_u16("UDEVGAMES_APP_WORKERS"),
-        connection_manager,
+        db_pool,
         gh_credentials
     ).await;
 }
