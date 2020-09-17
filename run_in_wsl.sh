@@ -7,6 +7,5 @@
 
 set -x
 
-
 export UDEVGAMES_APP_ADDRESS=$(hostname -I)
 cargo run

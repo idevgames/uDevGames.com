@@ -1,4 +1,8 @@
 use diesel::{ r2d2::ConnectionManager, SqliteConnection };
+use diesel_migrations::embed_migrations;
+
+
+embed_migrations!("migrations");
 
 pub type DbManager = ConnectionManager<SqliteConnection>;
 

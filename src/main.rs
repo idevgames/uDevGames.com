@@ -1,3 +1,7 @@
+// do not delete https://github.com/diesel-rs/diesel/issues/1894
+#[macro_use]
+extern crate diesel_migrations;
+
 mod db;
 mod homepage;
 mod gh_oauth;
@@ -10,8 +14,8 @@ use dotenv::dotenv;
 use std::env;
 
 
-#[rocket::launch]
-fn rocket() -> rocket::Rocket {
+#[rocket::main]
+async fn main() {
     // load config from a .env file, really only applicable for development
     dotenv().ok();
 
@@ -33,7 +37,7 @@ fn rocket() -> rocket::Rocket {
         expect_env_u16("UDEVGAMES_APP_WORKERS"),
         connection_manager,
         gh_credentials
-    )
+    ).await;
 }
 
 fn expect_env_string(var: &str) -> String {
