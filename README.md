@@ -36,7 +36,9 @@ callback: http://localhost:4000/gh_callback
 
 Note that if you use WSL2 you will have to update that callback to your VM's
 current IP address. You can get that address with `hostname -I`. There is a
-script called `run_in_wsl.sh` which makes this easier, setting the bind address.
+script called `wsl.sh` which makes this easier, setting the bind address. Call
+it with the program arguments you desire, such as `./wsl.sh serve` or
+`./wsl.sh migrate`.
 
 Finally, you'll need to configure the application. See `dotenv`, copying that
 locally to a `.env` file and filling it in per the instruction in the file.

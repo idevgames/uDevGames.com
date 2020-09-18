@@ -7,5 +7,12 @@
 
 set -x
 
+cargo build
+
+if [ $? -neq 0 ]; then
+  echo "Fix your broken build, man."
+  return -1
+fi
+
 export UDEVGAMES_APP_ADDRESS=$(hostname -I)
-cargo run
+cargo run -- $@
