@@ -11,6 +11,7 @@ pub struct GhCredentials {
 
 pub fn gh_client() -> ReqwestClient {
     reqwest::ClientBuilder::new()
+        // github requires that a user agent be set to use its api
         .user_agent("Rust/reqwest/uDevGames.com")
         .build()
         .unwrap()
@@ -85,6 +86,11 @@ async fn get_access_token(
         .unwrap()
 }
 
+/// Broadly speaking, these are the only fields we're truly interested in from
+/// Github. The id is the most important, for it is how we can durably refer to
+/// a user even if they change their alias on Github. The login pre-populates
+/// a user's identity on uDevGames, and the avatar and link to their github
+/// might become useful in the future, though it's not a sure thing.
 #[derive(Deserialize, Debug)]
 struct UserResponse {
     login: String, id: u64, avatar_url: String, html_url: String
