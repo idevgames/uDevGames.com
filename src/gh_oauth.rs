@@ -1,7 +1,10 @@
+use crate::db::DbPool;
+use crate::models::GhUserRecord;
 use reqwest::Client as ReqwestClient;
 use rocket::{get, State};
 use rocket_contrib::templates::Template;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 
 pub struct GhCredentials {
@@ -38,9 +41,10 @@ pub fn login_with_github(gh_credentials: State<GhCredentials>) -> Template {
 pub async fn gh_callback(
     gh_credentials: State<'_, GhCredentials>,
     gh_client: State<'_, ReqwestClient>,
+    db_pool: State<'_, DbPool>,
     code: String
 ) -> Template {
-    auth_with_github(&gh_client, &gh_credentials, &code).await;
+    auth_with_github(&gh_client, &db_pool, &gh_credentials, &code).await;
 
     #[derive(Serialize)]
     struct Context {
@@ -58,11 +62,14 @@ struct AuthorizationResponse {
 }
 
 async fn auth_with_github(
-    gh_client: &ReqwestClient, gh_credentials: &GhCredentials, code: &String
+    gh_client: &ReqwestClient, db_pool: &DbPool,
+    gh_credentials: &GhCredentials, code: &String
 ) {
     let authorization = get_access_token(&gh_client, &gh_credentials, &code).await;
     println!("authorization: {:?}", authorization);
-    let user = get_user_detail(&gh_client, &authorization.access_token).await;
+    let user = get_or_update_user_detail(
+        &gh_client, &db_pool, &authorization
+    ).await;
     println!("user: {:?}", user);
 }
 
@@ -93,10 +100,33 @@ async fn get_access_token(
 /// might become useful in the future, though it's not a sure thing.
 #[derive(Deserialize, Debug)]
 struct UserResponse {
-    login: String, id: u64, avatar_url: String, html_url: String
+    login: String, id: i64, avatar_url: String, html_url: String
 }
 
-async fn get_user_detail(gh_client: &ReqwestClient, access_token: &String) -> UserResponse {
+#[derive(Error, Debug)]
+enum GetOrUpdateUserDetailError {
+    #[error("Problem loading data. Call a DBA.")]
+    DbLoadError(#[from] crate::models::ModelError)
+}
+
+async fn get_or_update_user_detail(
+    gh_client: &ReqwestClient,
+    db_pool: &DbPool,
+    authorization: &AuthorizationResponse
+) -> Result<GhUserRecord, GetOrUpdateUserDetailError> {
+    let user = get_user_detail(
+        &gh_client, &authorization.access_token
+    ).await;
+    let gh_user_record = GhUserRecord::find_and_update(
+        &db_pool, user.id, &user.login, &user.avatar_url, &user.html_url
+    )?;
+
+    Ok(gh_user_record)
+}
+
+async fn get_user_detail(
+    gh_client: &ReqwestClient, access_token: &String
+) -> UserResponse {
    gh_client.get("https://api.github.com/user")
         .header("Authorization", format!("token {}", access_token))
         .header("Accept", "application/json")

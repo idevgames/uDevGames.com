@@ -47,3 +47,7 @@ if [ $? -neq 0 ]; then
 fi
 
 ssh ${SERVICE_SU_USER}@${SERVICE_HOST} sudo systemctl start ${SERVICE_NAME}
+
+# TODO: like, ping test the service to make sure it's up, i guess
+
+# TODO: take the site out of maintenance mode, no longer serving a static page

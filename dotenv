@@ -5,3 +5,4 @@ UDEVGAMES_APP_PORT=4000 # the port to run on
 # https://github.com/settings/applications/1357076
 GH_CLIENT_ID=
 GH_CLIENT_SECRET=
+DATABASE_URL=db/app.sqlite

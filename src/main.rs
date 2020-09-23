@@ -1,11 +1,16 @@
 // do not delete https://github.com/diesel-rs/diesel/issues/1894
 #[macro_use]
+extern crate diesel;
+
+#[macro_use]
 extern crate diesel_migrations;
 
 mod db;
 mod homepage;
 mod gh_oauth;
 mod migrate;
+mod models;
+mod schema;
 mod serve;
 mod template_context;
 
@@ -33,8 +38,6 @@ async fn main() {
             .about("starts the webserver for uDevGames")
         )
         .get_matches();
-
-
 
     let database_path = expect_env_string("APP_DATABASE_PATH");
     let db_pool = crate::db::get_pool(&database_path);
