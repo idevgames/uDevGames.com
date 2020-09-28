@@ -1,4 +1,4 @@
-use crate::db::DbPool;
+use crate::db::{ DbConn, DbPool };
 use thiserror::Error;
 
 
@@ -43,13 +43,23 @@ impl GhUserRecord {
         pool: &DbPool, gh_id: i64, gh_login: &str, gh_avatar_url: &str,
         gh_html_url: &str
     ) -> Result<GhUserRecord, ModelError> {
+        let conn = pool.get()?;
+        GhUserRecord::_find_and_update(
+            &conn, gh_id, gh_login, gh_avatar_url, gh_html_url
+        )
+    }
+    
+    fn _find_and_update(
+        conn: &DbConn, gh_id: i64, gh_login: &str, gh_avatar_url: &str,
+        gh_html_url: &str
+    ) -> Result<GhUserRecord, ModelError> {
         use crate::schema::gh_user_records::dsl::{
             gh_user_records,
             id, login, avatar_url, html_url
         };
         use diesel::prelude::*;
 
-        match GhUserRecord::find_by_id(&pool, gh_id)? {
+        match GhUserRecord::_find_by_id(conn, gh_id)? {
             Some(_) => {
                 // TODO: if the record matches what is already on file, skip the update
                 diesel::update(gh_user_records.find(gh_id))
@@ -58,7 +68,7 @@ impl GhUserRecord {
                         avatar_url.eq(gh_avatar_url),
                         html_url.eq(gh_html_url)
                     ))
-                    .execute(&pool.get()?)?;
+                    .execute(conn)?;
             },
             None => {
                 diesel::insert_into(gh_user_records)
@@ -68,26 +78,31 @@ impl GhUserRecord {
                         avatar_url.eq(gh_avatar_url),
                         html_url.eq(gh_html_url)
                     ))
-                    .execute(&pool.get()?)?;
+                    .execute(conn)?;
             }
         };
         
-        Ok(GhUserRecord::find_by_id(&pool, gh_id)?.unwrap())
+        Ok(GhUserRecord::_find_by_id(&conn, gh_id)?.unwrap())
     }
 
     /// Finds a given GhUserRecord by its id.
     pub fn find_by_id(
         pool: &DbPool, gh_user_id: i64
     ) -> Result<Option<GhUserRecord>, ModelError> {
+        let conn = pool.get()?;
+        GhUserRecord::_find_by_id(&conn, gh_user_id)
+    }
+
+    fn _find_by_id(
+        conn: &DbConn, gh_user_id: i64
+    ) -> Result<Option<GhUserRecord>, ModelError> {
         use diesel::prelude::*;
         use crate::schema::gh_user_records::dsl::*;
-
-        let conn = pool.get()?;
         
         let user_record = gh_user_records
             .filter(id.eq(gh_user_id))
             .limit(1)
-            .first::<GhUserRecord>(&conn);
+            .first::<GhUserRecord>(conn);
 
         r_to_opt(user_record)
     }
@@ -96,15 +111,20 @@ impl GhUserRecord {
     pub fn find_by_login(
         pool: &DbPool, gh_login: &str
     ) -> Result<Option<GhUserRecord>, ModelError> {
+        let conn = pool.get()?;
+        GhUserRecord::_find_by_login(&conn, gh_login)
+    }
+    
+    fn _find_by_login(
+        conn: &DbConn, gh_login: &str
+    ) -> Result<Option<GhUserRecord>, ModelError> {
         use diesel::prelude::*;
         use crate::schema::gh_user_records::dsl::*;
-
-        let conn = pool.get()?;
 
         let user_record = gh_user_records
             .filter(login.eq(gh_login))
             .limit(1)
-            .first::<GhUserRecord>(&conn);
+            .first::<GhUserRecord>(conn);
 
         r_to_opt(user_record)
     }
@@ -133,14 +153,19 @@ impl Permission {
     pub fn find_by_gh_user_id(
         pool: &DbPool, user_id: i64
     ) -> Result<Vec<Permission>, ModelError> {
+        let conn = pool.get()?;
+        Permission::_find_by_gh_user_id(&conn, user_id)
+    }
+
+    fn _find_by_gh_user_id(
+        conn: &DbConn, user_id: i64
+    ) -> Result<Vec<Permission>, ModelError> {
         use diesel::prelude::*;
         use crate::schema::permissions::dsl::*;
 
-        let conn = pool.get()?;
-
         let perms = permissions
             .filter(gh_user_id.eq(user_id))
-            .load::<Permission>(&conn)?;
+            .load::<Permission>(conn)?;
         
         Ok(perms)
     }
@@ -150,16 +175,71 @@ impl Permission {
     pub fn find_by_name(
         pool: &DbPool, permission_name: &str
     ) -> Result<Vec<Permission>, ModelError> {
+        let conn = pool.get()?;
+        Permission::_find_by_name(&conn, permission_name)
+    }
+
+    fn _find_by_name(
+        conn: &DbConn, permission_name: &str
+    ) -> Result<Vec<Permission>, ModelError> {
         use diesel::prelude::*;
         use crate::schema::permissions::dsl::*;
 
-        let conn = pool.get()?;
-
         let perms = permissions
             .filter(name.eq(permission_name))
-            .load::<Permission>(&conn)?;
+            .load::<Permission>(conn)?;
 
         Ok(perms)
+    }
+
+    /// Grants a permission to a user by id.
+    pub fn grant_permission(
+        pool: &DbPool, user_id: i64, permission_name: &str
+    ) -> Result<(), ModelError> {
+        let conn = pool.get()?;
+        Permission::_grant_permission(&conn, user_id, permission_name)
+    }
+
+    fn _grant_permission(
+        conn: &DbConn, user_id: i64, permission_name: &str
+    ) -> Result<(), ModelError> {
+        use diesel::prelude::*;
+        use crate::schema::permissions::dsl::*;
+
+        // if an existing equivalent permission exists, nop
+        let existing_permission = Permission::find_by_user_id_and_name(
+            &conn, user_id, &permission_name
+        )?;
+
+        if existing_permission.is_some() {
+            return Ok(());
+        }
+
+        // no existing permission, make a new one
+        diesel::insert_into(permissions)
+            .values((
+                gh_user_id.eq(user_id), name.eq(permission_name)
+            ))
+            .execute(conn)?;
+
+        Ok(())
+    }
+
+    /// Find a permission by both user id and name.
+    fn find_by_user_id_and_name(
+        conn: &DbConn, user_id: i64, permission_name: &str
+    ) -> Result<Option<Permission>, ModelError> {
+        use diesel::prelude::*;
+        use crate::schema::permissions::dsl::*;
+
+        let perm =
+            permissions
+                .filter(gh_user_id.eq(user_id))
+                .filter(name.eq(permission_name))
+                .limit(1)
+                .first::<Permission>(conn);
+
+        r_to_opt(perm)
     }
 }
 

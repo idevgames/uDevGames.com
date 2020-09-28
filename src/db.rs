@@ -1,4 +1,7 @@
-use diesel::{ r2d2::{ConnectionManager, Pool}, SqliteConnection };
+use diesel::{
+    r2d2::{ ConnectionManager, Pool, PooledConnection },
+    SqliteConnection
+};
 use diesel_migrations::embed_migrations;
 
 
@@ -6,6 +9,7 @@ embed_migrations!("migrations");
 
 pub type DbManager = ConnectionManager<SqliteConnection>;
 pub type DbPool = Pool<DbManager>;
+pub type DbConn = PooledConnection<ConnectionManager<SqliteConnection>>;
 
 // gets the pool.
 pub fn get_pool(db_path: &str) -> DbPool {

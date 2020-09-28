@@ -63,8 +63,23 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
     use crate::models::Permission;
 
     match subcmd.subcmd {
-        PermissionSubCommand::Grant(_) => {
-
+        PermissionSubCommand::Grant(grant) => {
+            let user =
+                UserIdentity::try_from(grant.user)
+                .expect(
+                    "Could not infer user; is your login \
+                    prefixed with @?"
+                );
+            let uid = match user {
+                UserIdentity::Id(id) => id,
+                UserIdentity::Login(_) =>
+                    user.find(&pool)
+                        .expect("Could not query db")
+                        .expect("No such user")
+                        .id
+            };
+            Permission::grant_permission(&pool, uid, &grant.permission)
+                .expect("Could not grant permission");
         },
         PermissionSubCommand::Revoke(_) => {
 
