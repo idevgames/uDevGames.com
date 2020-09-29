@@ -72,7 +72,7 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
                     )
                     .uid(&pool)
                     .expect("Could not query database");
-            Permission::grant_permission(&pool, uid, &grant.permission)
+            Permission::grant_permission_p(&pool, uid, &grant.permission)
                 .expect("Could not grant permission");
             println!("Permission granted!");
         },
@@ -99,7 +99,7 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
                         )
                         .uid(&pool)
                         .expect("Could not query database");
-                let perms = Permission::find_by_gh_user_id(&pool, uid)
+                let perms = Permission::find_by_gh_user_id_p(&pool, uid)
                     .expect("Could not query db");
                 
                 if perms.len() > 0 {
@@ -112,7 +112,7 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
                 }
             } else if show.permission.is_some() {
                 let perm = show.permission.unwrap();
-                let perms = Permission::find_by_name(&pool, &perm)
+                let perms = Permission::find_by_name_p(&pool, &perm)
                     .expect("Could not query db");
 
                 if perms.len() > 0 {
@@ -160,8 +160,8 @@ impl UserIdentity {
     /// Find a GhUserRecord for this UserIdentity, if one exists.
     fn find(&self, pool: &DbPool) -> Result<Option<GhUserRecord>, ModelError> {
         match self {
-            UserIdentity::Login(login) => GhUserRecord::find_by_login(&pool, login),
-            UserIdentity::Id(id) => GhUserRecord::find_by_id(&pool, *id)
+            UserIdentity::Login(login) => GhUserRecord::find_by_login_p(&pool, login),
+            UserIdentity::Id(id) => GhUserRecord::find_by_id_p(&pool, *id)
         }
     }
 

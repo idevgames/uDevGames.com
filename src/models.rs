@@ -39,17 +39,19 @@ pub struct GhUserRecord {
 impl GhUserRecord {
     /// Finds or creates a GhUserRecord in the database with the given gh_id,
     /// and ensures that it has the given attributes.
-    pub fn find_and_update(
+    pub fn find_and_update_p(
         pool: &DbPool, gh_id: i64, gh_login: &str, gh_avatar_url: &str,
         gh_html_url: &str
     ) -> Result<GhUserRecord, ModelError> {
         let conn = pool.get()?;
-        GhUserRecord::_find_and_update(
+        GhUserRecord::find_and_update_c(
             &conn, gh_id, gh_login, gh_avatar_url, gh_html_url
         )
     }
     
-    fn _find_and_update(
+    /// Finds or creates a GhUserRecord in the database with the given gh_id,
+    /// and ensures that it has the given attributes.
+    pub fn find_and_update_c(
         conn: &DbConn, gh_id: i64, gh_login: &str, gh_avatar_url: &str,
         gh_html_url: &str
     ) -> Result<GhUserRecord, ModelError> {
@@ -59,16 +61,19 @@ impl GhUserRecord {
         };
         use diesel::prelude::*;
 
-        match GhUserRecord::_find_by_id(conn, gh_id)? {
-            Some(_) => {
-                // TODO: if the record matches what is already on file, skip the update
-                diesel::update(gh_user_records.find(gh_id))
-                    .set((
-                        login.eq(gh_login),
-                        avatar_url.eq(gh_avatar_url),
-                        html_url.eq(gh_html_url)
-                    ))
-                    .execute(conn)?;
+        match GhUserRecord::find_by_id_c(conn, gh_id)? {
+            Some(u) => {
+                if gh_login != u.login
+                    || gh_avatar_url != u.avatar_url
+                    || gh_html_url != u.html_url {
+                    diesel::update(gh_user_records.find(gh_id))
+                        .set((
+                            login.eq(gh_login),
+                            avatar_url.eq(gh_avatar_url),
+                            html_url.eq(gh_html_url)
+                        ))
+                        .execute(conn)?;
+                }
             },
             None => {
                 diesel::insert_into(gh_user_records)
@@ -82,18 +87,19 @@ impl GhUserRecord {
             }
         };
         
-        Ok(GhUserRecord::_find_by_id(&conn, gh_id)?.unwrap())
+        Ok(GhUserRecord::find_by_id_c(&conn, gh_id)?.unwrap())
     }
 
     /// Finds a given GhUserRecord by its id.
-    pub fn find_by_id(
+    pub fn find_by_id_p(
         pool: &DbPool, gh_user_id: i64
     ) -> Result<Option<GhUserRecord>, ModelError> {
         let conn = pool.get()?;
-        GhUserRecord::_find_by_id(&conn, gh_user_id)
+        GhUserRecord::find_by_id_c(&conn, gh_user_id)
     }
 
-    fn _find_by_id(
+    /// Finds a given GhUserRecord by its id.
+    pub fn find_by_id_c(
         conn: &DbConn, gh_user_id: i64
     ) -> Result<Option<GhUserRecord>, ModelError> {
         use diesel::prelude::*;
@@ -108,14 +114,15 @@ impl GhUserRecord {
     }
 
     /// Finds a given GhUserRecord by its login.
-    pub fn find_by_login(
+    pub fn find_by_login_p(
         pool: &DbPool, gh_login: &str
     ) -> Result<Option<GhUserRecord>, ModelError> {
         let conn = pool.get()?;
-        GhUserRecord::_find_by_login(&conn, gh_login)
+        GhUserRecord::find_by_login_c(&conn, gh_login)
     }
     
-    fn _find_by_login(
+    /// Finds a given GhUserRecord by its login.
+    pub fn find_by_login_c(
         conn: &DbConn, gh_login: &str
     ) -> Result<Option<GhUserRecord>, ModelError> {
         use diesel::prelude::*;
@@ -150,14 +157,15 @@ pub struct Permission {
 
 impl Permission {
     /// Finds all permissions on a given user.
-    pub fn find_by_gh_user_id(
+    pub fn find_by_gh_user_id_p(
         pool: &DbPool, user_id: i64
     ) -> Result<Vec<Permission>, ModelError> {
         let conn = pool.get()?;
-        Permission::_find_by_gh_user_id(&conn, user_id)
+        Permission::find_by_gh_user_id_c(&conn, user_id)
     }
 
-    fn _find_by_gh_user_id(
+    /// Finds all permissions on a given user.
+    pub fn find_by_gh_user_id_c(
         conn: &DbConn, user_id: i64
     ) -> Result<Vec<Permission>, ModelError> {
         use diesel::prelude::*;
@@ -172,14 +180,16 @@ impl Permission {
 
     /// Finds all permissions with a given name, or in other domain language
     /// this describes all users with a specific permission.
-    pub fn find_by_name(
+    pub fn find_by_name_p(
         pool: &DbPool, permission_name: &str
     ) -> Result<Vec<Permission>, ModelError> {
         let conn = pool.get()?;
-        Permission::_find_by_name(&conn, permission_name)
+        Permission::find_by_name_c(&conn, permission_name)
     }
 
-    fn _find_by_name(
+    /// Finds all permissions with a given name, or in other domain language
+    /// this describes all users with a specific permission.
+    pub fn find_by_name_c(
         conn: &DbConn, permission_name: &str
     ) -> Result<Vec<Permission>, ModelError> {
         use diesel::prelude::*;
@@ -193,21 +203,22 @@ impl Permission {
     }
 
     /// Grants a permission to a user by id.
-    pub fn grant_permission(
+    pub fn grant_permission_p(
         pool: &DbPool, user_id: i64, permission_name: &str
     ) -> Result<(), ModelError> {
         let conn = pool.get()?;
-        Permission::_grant_permission(&conn, user_id, permission_name)
+        Permission::grant_permission_c(&conn, user_id, permission_name)
     }
 
-    fn _grant_permission(
+    /// Grant a permission to a user by id.
+    pub fn grant_permission_c(
         conn: &DbConn, user_id: i64, permission_name: &str
     ) -> Result<(), ModelError> {
         use diesel::prelude::*;
         use crate::schema::permissions::dsl::*;
 
         // if an existing equivalent permission exists, nop
-        let existing_permission = Permission::find_by_user_id_and_name(
+        let existing_permission = Permission::find_by_user_id_and_name_c(
             &conn, user_id, &permission_name
         )?;
 
@@ -225,6 +236,7 @@ impl Permission {
         Ok(())
     }
 
+    /// Revoke a permission from a user.
     pub fn revoke_permission_p(
         pool: &DbPool, user_id: i64, permission_name: &str
     ) -> Result<usize, ModelError> {
@@ -232,6 +244,7 @@ impl Permission {
         Permission::revoke_permission_c(&conn, user_id, permission_name)
     }
 
+    /// Revoke a permission from a user.
     pub fn revoke_permission_c(
         conn: &DbConn, user_id: i64, permission_name: &str
     ) -> Result<usize, ModelError> {
@@ -248,7 +261,7 @@ impl Permission {
     }
 
     /// Find a permission by both user id and name.
-    fn find_by_user_id_and_name(
+    pub fn find_by_user_id_and_name_c(
         conn: &DbConn, user_id: i64, permission_name: &str
     ) -> Result<Option<Permission>, ModelError> {
         use diesel::prelude::*;

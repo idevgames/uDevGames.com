@@ -168,7 +168,7 @@ async fn get_or_update_user_detail(
     let user = get_user_detail(
         &gh_client, &authorization.access_token
     ).await?;
-    let gh_user_record = GhUserRecord::find_and_update(
+    let gh_user_record = GhUserRecord::find_and_update_p(
         &db_pool, user.id, &user.login, &user.avatar_url, &user.html_url
     )?;
 
