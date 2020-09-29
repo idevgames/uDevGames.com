@@ -64,42 +64,41 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
 
     match subcmd.subcmd {
         PermissionSubCommand::Grant(grant) => {
-            let user =
+            let uid =
                 UserIdentity::try_from(grant.user)
-                .expect(
-                    "Could not infer user; is your login \
-                    prefixed with @?"
-                );
-            let uid = match user {
-                UserIdentity::Id(id) => id,
-                UserIdentity::Login(_) =>
-                    user.find(&pool)
-                        .expect("Could not query db")
-                        .expect("No such user")
-                        .id
-            };
-            Permission::grant_permission(&pool, uid, &grant.permission)
-                .expect("Could not grant permission");
-        },
-        PermissionSubCommand::Revoke(_) => {
-
-        },
-        PermissionSubCommand::Show(show) => {
-            if show.user.is_some() {
-                let user =
-                    UserIdentity::try_from(show.user.unwrap())
                     .expect(
                         "Could not infer user; is your login \
                         prefixed with @?"
-                    );
-                let uid = match user {
-                    UserIdentity::Id(id) => id,
-                    UserIdentity::Login(_) =>
-                        user.find(&pool)
-                            .expect("Could not query db")
-                            .expect("No such user.")
-                            .id
-                };
+                    )
+                    .uid(&pool)
+                    .expect("Could not query database");
+            Permission::grant_permission(&pool, uid, &grant.permission)
+                .expect("Could not grant permission");
+            println!("Permission granted!");
+        },
+        PermissionSubCommand::Revoke(revoke) => {
+            let uid =
+                UserIdentity::try_from(revoke.user)
+                    .expect(
+                        "Could not infer user; is your login \
+                        prefixed with @?"
+                    )
+                    .uid(&pool)
+                    .expect("Could not query database");
+            let r = Permission::revoke_permission_p(&pool, uid, &revoke.permission)
+                .expect("Could not revoke permission");
+            println!("Revoked {} permissions", r);
+        },
+        PermissionSubCommand::Show(show) => {
+            if show.user.is_some() {
+                let uid =
+                    UserIdentity::try_from(show.user.unwrap())
+                        .expect(
+                            "Could not infer user; is your login \
+                            prefixed with @?"
+                        )
+                        .uid(&pool)
+                        .expect("Could not query database");
                 let perms = Permission::find_by_gh_user_id(&pool, uid)
                     .expect("Could not query db");
                 
@@ -144,6 +143,20 @@ enum UserIdentity {
 }
 
 impl UserIdentity {
+    /// The uid for this identity.
+    fn uid(&self, pool: &DbPool) -> Result<i64, ModelError> {
+        match self {
+            UserIdentity::Id(id) => Ok(*id),
+            UserIdentity::Login(_) =>
+                Ok(
+                    self.find(pool)
+                        .expect("Could not query db")
+                        .expect("No such user")
+                        .id
+                )
+        }
+    }
+
     /// Find a GhUserRecord for this UserIdentity, if one exists.
     fn find(&self, pool: &DbPool) -> Result<Option<GhUserRecord>, ModelError> {
         match self {
@@ -151,6 +164,7 @@ impl UserIdentity {
             UserIdentity::Id(id) => GhUserRecord::find_by_id(&pool, *id)
         }
     }
+
 }
 
 impl TryFrom<String> for UserIdentity {

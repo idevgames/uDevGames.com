@@ -225,6 +225,28 @@ impl Permission {
         Ok(())
     }
 
+    pub fn revoke_permission_p(
+        pool: &DbPool, user_id: i64, permission_name: &str
+    ) -> Result<usize, ModelError> {
+        let conn = pool.get()?;
+        Permission::revoke_permission_c(&conn, user_id, permission_name)
+    }
+
+    pub fn revoke_permission_c(
+        conn: &DbConn, user_id: i64, permission_name: &str
+    ) -> Result<usize, ModelError> {
+        use diesel::prelude::*;
+        use crate::schema::permissions::dsl::*;
+
+        let r = diesel::delete(
+            permissions
+                .filter(gh_user_id.eq(user_id))
+                .filter(name.eq(permission_name))
+        ).execute(conn)?;
+
+        Ok(r)
+    }
+
     /// Find a permission by both user id and name.
     fn find_by_user_id_and_name(
         conn: &DbConn, user_id: i64, permission_name: &str
