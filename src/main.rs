@@ -50,6 +50,7 @@ async fn main() {
                 expect_env_string("UDEVGAMES_APP_ADDRESS"),
                 expect_env_u16("UDEVGAMES_APP_PORT"),
                 expect_env_u16("UDEVGAMES_APP_WORKERS"),
+                expect_env_string("UDEVGAMES_APP_SECRET"),
                 db_pool,
                 gh_credentials
             ).await;

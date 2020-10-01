@@ -6,13 +6,13 @@ use rocket_contrib::serve::{crate_relative, StaticFiles};
 
 
 pub async fn serve(
-    address: String, port: u16, workers: u16,
+    address: String, port: u16, workers: u16, secret: String,
     db_pool: DbPool,
     gh_credentials: GhCredentials
     /* there's gonna be some databasey nonsense here, too */
 ) {
     let config = RocketConfig::build(RocketEnvironment::Production)
-        .address(address).port(port).workers(workers)
+        .address(address).port(port).workers(workers).secret_key(secret)
         .expect("the configuration is bad!");
 
     let _ = rocket::custom(config)
@@ -25,6 +25,7 @@ pub async fn serve(
             crate::homepage::homepage,
             crate::gh_oauth::login_with_github,
             crate::gh_oauth::gh_callback,
+            crate::gh_oauth::logout,
         ])
         .mount("/static", StaticFiles::from(crate_relative!("/static")))
         .launch()

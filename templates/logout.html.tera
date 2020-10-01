@@ -1,0 +1,9 @@
+{% extends "layout" %}
+{% block content %}
+  <div class="card text-dark bg-light shadow">
+    <h4 class="card-header">Bye</h4>
+    <p>
+      Maybe you'd be interested in going back to the <a href="/">home page</a>?
+    </p>
+  </div>
+{% endblock %}

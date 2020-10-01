@@ -194,3 +194,18 @@ async fn get_user_detail(
 
     Ok(r)
 }
+
+#[get("/logout")]
+pub async fn logout(mut cookies: Cookies<'_>) -> Template {
+    cookies.remove_private(Cookie::named("gh_user_id"));
+
+    #[derive(Debug, Serialize)]
+    struct Context {
+
+    }
+
+    let context = Context {
+    };
+
+    Template::render("logout", &context)
+}
