@@ -31,7 +31,7 @@ pub struct GhUserRecord {
 
     /// Url of this user's picture.
     pub avatar_url: String,
-    
+
     /// Url of this user's Github profile.
     pub html_url: String
 }
@@ -48,7 +48,7 @@ impl GhUserRecord {
             &conn, gh_id, gh_login, gh_avatar_url, gh_html_url
         )
     }
-    
+
     /// Finds or creates a GhUserRecord in the database with the given gh_id,
     /// and ensures that it has the given attributes.
     pub fn find_and_update_c(
@@ -86,7 +86,7 @@ impl GhUserRecord {
                     .execute(conn)?;
             }
         };
-        
+
         Ok(GhUserRecord::find_by_id_c(&conn, gh_id)?.unwrap())
     }
 
@@ -104,7 +104,7 @@ impl GhUserRecord {
     ) -> Result<Option<GhUserRecord>, ModelError> {
         use diesel::prelude::*;
         use crate::schema::gh_user_records::dsl::*;
-        
+
         let user_record = gh_user_records
             .filter(id.eq(gh_user_id))
             .limit(1)
@@ -120,7 +120,7 @@ impl GhUserRecord {
         let conn = pool.get()?;
         GhUserRecord::find_by_login_c(&conn, gh_login)
     }
-    
+
     /// Finds a given GhUserRecord by its login.
     pub fn find_by_login_c(
         conn: &DbConn, gh_login: &str
@@ -174,7 +174,7 @@ impl Permission {
         let perms = permissions
             .filter(gh_user_id.eq(user_id))
             .load::<Permission>(conn)?;
-        
+
         Ok(perms)
     }
 

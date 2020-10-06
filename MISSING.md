@@ -8,3 +8,5 @@ In no particular order:
   and the operator prompted to sync the use records with Github.
 * `udevgames user sync -u @login/id` should sync our local user record cache
   with Github, as a remediation step for the above case.
+* When I log in I should be automatically redirected to the most recent page I
+  was looking at.
