@@ -10,3 +10,5 @@ In no particular order:
   with Github, as a remediation step for the above case.
 * When I log in I should be automatically redirected to the most recent page I
   was looking at.
+* When I have an invalid cookie I should see an error prompting me to log out
+  (which will destroy my cookie) and log back in again.
