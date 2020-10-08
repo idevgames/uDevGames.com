@@ -29,10 +29,10 @@ https://docs.github.com/en/rest/guides/basics-of-authentication.
 To run uDevGames.com locally, first configure an application with Github:
 https://github.com/settings/applications/new
 
-name: uDevGames-your-github-alias  
-homepage url: https://www.udevgames.com/  
-description: Periodic game development jams and contests by iDevGames.  
-callback: http://localhost:4000/gh_callback  
+**name**: uDevGames-your-github-alias  
+**homepage url**: https://www.udevgames.com/  
+**description**: Periodic game development jams and contests by iDevGames.  
+**callback**: http://localhost:4000/gh_callback  
 
 Note that if you use WSL2 you will have to update that callback to your VM's
 current IP address. You can get that address with `hostname -I`. There is a

@@ -1,10 +1,16 @@
+# you shouldn't need to modify these
 APP_DATABASE_PATH=db/app.sqlite # the sqlite database to store everything in
+DATABASE_URL=db/app.sqlite # the database url used by diesel_cli
 UDEVGAMES_APP_WORKERS=16 # the number of worker threads backing this app
 UDEVGAMES_APP_PORT=4000 # the port to run on
-UDEVGAMES_APP_ADDRESS=localhost # remove this when using wsl
-UDEVGAMES_APP_SECRET=$(openssl rand -base64 32) # fill this in with the output
-# get a new development application registered with github
-# https://github.com/settings/applications/1357076
+
+# remove this when using wsl
+UDEVGAMES_APP_ADDRESS=localhost
+
+# fill this in with the output of $(openssl rand -base64 32)
+UDEVGAMES_APP_SECRET=
+
+# get a new development application registered with github using the
+# instructions in the README
 GH_CLIENT_ID=
 GH_CLIENT_SECRET=
-DATABASE_URL=db/app.sqlite
