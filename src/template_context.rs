@@ -11,21 +11,36 @@ use thiserror::Error;
 /// for pages which can be viewed by anyone but which may change their controls
 /// when viewed by someone who is logged in.
 pub struct UserOptional {
+    /// The current user, or is it?
     user: Option<GhUserRecord>,
+    /// The permissions the current user has, if any.
     permissions: Vec<String>
 }
 
+/// This is the context that goes to the template itself. To check for the
+/// presence of a user, use the `is object` test.
 #[derive(Debug, Serialize)]
 pub struct UserOptionalContext {
+    /// The user, or is it?
     user: Option<UserOptionalContextUser>
 }
 
+/// The fields that describe a user in a template context.
 #[derive(Debug, Serialize)]
 struct UserOptionalContextUser {
+    /// The user's numeric id.
     id: i64,
+
+    /// The user's Github login.
     login: String,
+
+    /// The user's Github profile link.
     html_url: String,
+
+    /// The user's avatar.
     avatar_url: String,
+
+    /// List of the user's permissions.
     permissions: Vec<String>,
 }
 
@@ -46,6 +61,7 @@ impl UserOptional {
     }
 }
 
+/// Various kinds of error getting a `UserOptional` from a `Request`.
 #[derive(Debug, Error)]
 pub enum UserOptionalError {
     #[error("Could not get a connection from the pool with error {0}")]
@@ -121,5 +137,41 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserOptional {
         };
 
         Outcome::Success(u)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::template_context::*;
+    use rocket_contrib::templates::tera::{ Context, Tera, };
+
+    #[test]
+    fn test_user_optional_template_context() {
+        let none_context = UserOptionalContext { user: None };
+        let some_context = UserOptionalContext {
+            user: Some(UserOptionalContextUser {
+                id: 1, login: "ed".to_string(), html_url: "".to_string(),
+                avatar_url: "".to_string(),
+                permissions: vec!["admin".to_string()]
+            })
+        };
+        let mut tera = Tera::default();
+        tera.add_raw_template("example.html", "
+            {% if user is object %}
+            The user is logged in!
+            {% else %}
+            There is no user logged in.
+            {% endif %}
+        ").unwrap();
+        let none_result = tera.render(
+            "example.html",
+            &Context::from_serialize(&none_context).unwrap()
+        ).unwrap();
+        let some_result = tera.render(
+            "example.html",
+            &Context::from_serialize(&some_context).unwrap()
+        ).unwrap();
+        assert_eq!("There is no user logged in.", none_result.trim());
+        assert_eq!("The user is logged in!", some_result.trim());
     }
 }
