@@ -1,22 +1,20 @@
 {% extends "layout" %}
 {% block content %}
-  <div class="card text-dark bg-light shadow">
-    <h4 class="card-header">Hello, world!</h4>
-    <p>
-      {% if auth.user is object %}
-        Hello, {{ auth.user.login }}. You can <a href="/logout">logout</a> now.
-      {% else %}
-        Hello unknown user, would you like to <a href="/login_with_github">login</a>?
-      {% endif %}
-    </p>
+<h4 class="card-header">Hello, world!</h4>
+<p>
+  {% if auth.user is object %}
+    Hello, {{ auth.user.login }}. You can <a href="/logout">logout</a> now.
+  {% else %}
+    Hello unknown user, would you like to <a href="/login_with_github">login</a>?
+  {% endif %}
+</p>
 
-    <br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
-    <br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
-    <br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
-    <br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
-    <br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
-    <p>
-      .
-    </p>
-  </div>
+<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
+<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
+<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
+<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
+<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />.<br />
+<p>
+  .
+</p>
 {% endblock %}

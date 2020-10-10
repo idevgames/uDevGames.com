@@ -3,10 +3,12 @@
   <header class="container">
     <div id="idg-img"></div>
   </header>
-  <article class="container">
-    {% block content %}
-    {% endblock %}
-  </article>
+  <div class="container">
+    <div class="container card text-dark bg-light shadow">
+        {% block content %}
+        {% endblock %}
+    </div>
+  </div>
   <footer class="container">
     &copy; 1998 - {{ now() | date(format='%Y') }} iDevGames.
   </footer>

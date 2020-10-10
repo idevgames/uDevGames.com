@@ -13,6 +13,7 @@ use thiserror::Error;
 pub struct UserOptional {
     /// The current user, or is it?
     user: Option<GhUserRecord>,
+
     /// The permissions the current user has, if any.
     permissions: Vec<String>
 }
@@ -106,7 +107,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserOptional {
                         ))
                 };
 
-                let user = 
+                let user =
                     match GhUserRecord::find_by_id_c(&conn, uid) {
                         Ok(u) => u,
                         Err(e) =>
@@ -145,6 +146,9 @@ mod tests {
     use crate::template_context::*;
     use rocket_contrib::templates::tera::{ Context, Tera, };
 
+    /// Validates the detection of a logged in user in a template. If this
+    /// breaks (highly unlikely) then a number of templates also need to be
+    /// updated.
     #[test]
     fn test_user_optional_template_context() {
         let none_context = UserOptionalContext { user: None };
