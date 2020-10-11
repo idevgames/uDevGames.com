@@ -13,7 +13,7 @@
           <nav class="navbar-nav mr-auto mb-2 mb-lg-0" aria-label="breadcrumb">
             <ol class="breadcrumb mr-auto mb-2 mb-lg-0">
               {% for breadcrumb in breadcrumbs %}
-                <li class="breadcrumb-item nav-item">
+                <li class="breadcrumb-item">
                   <a href="{{ breadcrumb.href }}" class="nav-link">
                     {{ breadcrumb.content }}
                   </a>
@@ -24,7 +24,7 @@
         {% else %}
           <span class="navbar-brand">
             Game jams and contests by
-            <a href="https://www.idevgames.com/">iDevGames</a>.
+            <a href="https://www.idevgames.com/">iDevGames</a>
           </span>
         {% endif %}
         {% if suppress_auth_controls | default(value=false) != true %}
