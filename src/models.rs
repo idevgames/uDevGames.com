@@ -1,4 +1,8 @@
-use crate::db::{ DbConn, DbPool };
+use crate::{
+    attachment::AttachmentStorage,
+    db::{ DbConn, DbPool }
+};
+use std::path::PathBuf;
 use thiserror::Error;
 
 
@@ -13,6 +17,38 @@ pub enum ModelError {
     /// was expected.
     #[error("Couldn't query the database with error {0}. Send a DBA.")]
     DieselError(#[from] diesel::result::Error)
+}
+
+/// An attachment, which is a file on disk.
+#[derive(Debug, Queryable)]
+pub struct Attachment {
+    /// Unique id of this attachment.
+    pub id: i32,
+
+    /// The file path of this attachment on disk.
+    pub file: String,
+
+    /// The name of this attachment, which is the human or friendly name of it.
+    pub name: String,
+
+    /// The MIME type, such as `image/png`, which is stored so that they can be
+    /// served up idiomatically.
+    pub mime_type: String,
+
+    /// The MD5 of the file. If this differs from what is on disk, we may be
+    /// experiencing bitrot or an attack.
+    pub md5: Vec<u8>,
+}
+
+impl Attachment {
+    // /// Create a new attachment from a temporary file. Copies it to a permanent
+    // /// storage location and md5's it.
+    // pub fn new(
+    //     attachment_storage: &AttachmentStorage,
+    //     file: impl AsRef<PathBuf>, name: &str, mime_type: &str
+    // ) -> Result<Attachment, ModelError> {
+
+    // }
 }
 
 /// Local cache of part of Github's understanding of who a user is. Particularly

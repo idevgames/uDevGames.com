@@ -11,12 +11,13 @@ clap = "3.0.0-beta.2"
 diesel = { version = "1.4.5", features = [ "sqlite", "r2d2" ] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
+md5 = "0.7.0"
 serde = { version = "1.0.116", features = [ "derive" ] }
-thiserror = "1.0.20"
+thiserror = "1.0.21"
 
 [dependencies.reqwest]
 version = "0.10.8"
-features = [ "json", "blocking" ]
+features = [ "json" ]
 
 [dependencies.rocket]
 git = "https://github.com/SergioBenitez/Rocket"
@@ -27,3 +28,7 @@ git = "https://github.com/SergioBenitez/Rocket"
 branch = "master"
 default-features = false
 features = [ "serve", "tera_templates" ]
+
+[dev-dependencies]
+hex = "0.4.2"
+tempfile = "3.1.0"

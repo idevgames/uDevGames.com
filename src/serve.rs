@@ -1,15 +1,17 @@
-use crate::{ db::DbPool, gh_oauth::GhCredentials };
+use crate::{
+    attachment::AttachmentStorage, db::DbPool, gh_oauth::GhCredentials,
+};
 use rocket::routes;
-use rocket::config::{ Config as RocketConfig, Environment as RocketEnvironment, };
+use rocket::config::{
+    Config as RocketConfig, Environment as RocketEnvironment,
+};
 use rocket_contrib::templates::Template;
 use rocket_contrib::serve::{crate_relative, StaticFiles};
 
 
 pub async fn serve(
-    address: String, port: u16, workers: u16, secret: String,
-    db_pool: DbPool,
-    gh_credentials: GhCredentials
-    /* there's gonna be some databasey nonsense here, too */
+    address: String, port: u16, workers: u16, secret: String, db_pool: DbPool,
+    gh_credentials: GhCredentials, attachment_storage: AttachmentStorage
 ) {
     let config = RocketConfig::build(RocketEnvironment::Production)
         .address(address).port(port).workers(workers).secret_key(secret)
@@ -19,6 +21,7 @@ pub async fn serve(
         .manage(gh_credentials)
         .manage(crate::gh_oauth::gh_client())
         .manage(db_pool)
+        .manage(attachment_storage)
         .attach(Template::fairing())
         // TODO: compression fairing would be nice here
         .mount("/", routes![

@@ -5,6 +5,7 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
+mod attachment;
 mod cliopts;
 mod db;
 mod homepage;
@@ -16,6 +17,7 @@ mod serve;
 mod template_context;
 
 use clap::Clap;
+use crate::attachment::AttachmentStorage;
 use crate::cliopts::{ Opts, SubCommand };
 use crate::db::{ DbPool, get_pool };
 use crate::gh_oauth::GhCredentials;
@@ -24,6 +26,7 @@ use dotenv::dotenv;
 use std::convert::TryFrom;
 use std::env;
 use std::num::ParseIntError;
+use std::path::PathBuf;
 
 
 #[rocket::main]
@@ -41,6 +44,11 @@ async fn main() {
             crate::db::migrate_db(&db_pool);
         },
         SubCommand::Serve(_) => {
+            let attachment_storage = AttachmentStorage::new(
+                PathBuf::from(
+                    expect_env_string("UDEVGAMES_ATTACHMENT_STORAGE")
+                )
+            );
             let gh_credentials = GhCredentials {
                 client_id: expect_env_string("GH_CLIENT_ID"),
                 client_secret: expect_env_string("GH_CLIENT_SECRET"),
@@ -51,8 +59,7 @@ async fn main() {
                 expect_env_u16("UDEVGAMES_APP_PORT"),
                 expect_env_u16("UDEVGAMES_APP_WORKERS"),
                 expect_env_string("UDEVGAMES_APP_SECRET"),
-                db_pool,
-                gh_credentials
+                db_pool, gh_credentials, attachment_storage
             ).await;
         },
         SubCommand::Permission(subcmd) => perms_subcmd(&db_pool, subcmd)
