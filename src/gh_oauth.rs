@@ -1,5 +1,6 @@
 use crate::db::DbPool;
 use crate::models::GhUserRecord;
+use crate::template_context::{ Breadcrumbs, BreadcrumbsContext };
 use reqwest::Client as ReqwestClient;
 use rocket::{ get, http::Cookie, http::Cookies, response::Responder, State };
 use rocket_contrib::templates::Template;
@@ -31,22 +32,27 @@ pub fn gh_client() -> ReqwestClient {
 }
 
 /// Presents the login page. This is a simple page with a link to Github.com
-/// which is where users start the authorization process.
-#[get("/login_with_github")]
+/// which is where users start the authorization process. Other OAuth providers
+/// may be supported in the future... but don't count on it.
+#[get("/login")]
 pub fn login_with_github(gh_credentials: State<GhCredentials>) -> Template {
     #[derive(Serialize)]
     struct Context {
-        oauth_url: String
+        oauth_url: String,
+        breadcrumbs: BreadcrumbsContext,
+        suppress_auth_controls: bool,
     };
 
     let context = Context {
         oauth_url: format!(
             "http://github.com/login/oauth/authorize?client_id={}",
             gh_credentials.client_id
-        )
+        ),
+        breadcrumbs: Breadcrumbs::from_crumbs(vec![]).to_context(),
+        suppress_auth_controls: true,
     };
 
-    Template::render("login_with_github", &context)
+    Template::render("login", &context)
 }
 
 /// Responder which communicates the failure state of `gh_callback` to the
@@ -89,10 +95,14 @@ pub async fn gh_callback(
 
     #[derive(Serialize)]
     struct Context {
-
+        suppress_auth_controls: bool,
+        breadcrumbs: BreadcrumbsContext,
     };
 
-    let context = Context { };
+    let context = Context {
+        suppress_auth_controls: true,
+        breadcrumbs: Breadcrumbs::from_crumbs(vec![]).to_context(),
+    };
 
     Ok(Template::render("gh_callback", &context))
 }
@@ -253,10 +263,11 @@ pub async fn logout(mut cookies: Cookies<'_>) -> Template {
 
     #[derive(Debug, Serialize)]
     struct Context {
-
+        breadcrumbs: BreadcrumbsContext,
     }
 
     let context = Context {
+        breadcrumbs: Breadcrumbs::from_crumbs(vec![]).to_context()
     };
 
     Template::render("logout", &context)

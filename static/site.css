@@ -12,6 +12,16 @@ header {
   z-index: 1;
 }
 
+.rounded-corners-top {
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+
+.rounded-corners-bottom {
+  border-bottom-left-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+}
+
 #idg-img {
   background: url("/static/udevgames_logo.png") no-repeat;
   height: 85px;

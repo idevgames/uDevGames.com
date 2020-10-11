@@ -12,3 +12,5 @@ In no particular order:
   was looking at.
 * When I have an invalid cookie I should see an error prompting me to log out
   (which will destroy my cookie) and log back in again.
+* For some reason the breadcrumbs make the navbar taller? I'd like to to be
+  consistent.

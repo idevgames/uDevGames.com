@@ -1,9 +1,12 @@
 {% extends "layout" %}
 {% block content %}
-  <div class="card text-dark bg-light shadow">
-    <h4 class="card-header">Bye</h4>
+<div class="row">
+  <div class="col-sm-2"></div>
+  <div class="col-sm-8">
     <p>
-      Maybe you'd be interested in going back to the <a href="/">home page</a>?
+      You've been logged out.
     </p>
   </div>
+  <div class="col-sm-2"></div>
+</div>
 {% endblock %}

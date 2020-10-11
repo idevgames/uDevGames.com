@@ -13,7 +13,5 @@ pub fn homepage(user: UserOptional) -> Template {
 
     let context = Context { auth: user.to_context() };
 
-    println!("context: {:?}", context);
-
     Template::render("homepage", &context)
 }

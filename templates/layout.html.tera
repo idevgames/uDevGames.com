@@ -4,9 +4,51 @@
     <div id="idg-img"></div>
   </header>
   <div class="container">
-    <div class="container card text-dark bg-light shadow">
+    <nav class="
+      navbar navbar-expand-lg navbar-light bg-light rounded-corners-top
+      text-dark
+    ">
+      <div class="container-fluid">
+        {% if breadcrumbs %}
+          <nav class="navbar-nav mr-auto mb-2 mb-lg-0" aria-label="breadcrumb">
+            <ol class="breadcrumb mr-auto mb-2 mb-lg-0">
+              {% for breadcrumb in breadcrumbs %}
+                <li class="breadcrumb-item nav-item">
+                  <a href="{{ breadcrumb.href }}" class="nav-link">
+                    {{ breadcrumb.content }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ol>
+          </nav>
+        {% else %}
+          <span class="navbar-brand">
+            Game jams and contests by
+            <a href="https://www.idevgames.com/">iDevGames</a>.
+          </span>
+        {% endif %}
+        {% if suppress_auth_controls | default(value=false) != true %}
+          <form class="d-flex">
+            {% if auth is defined and auth.user is object %}
+              <a href="/logout" class="btn btn-outline-danger" role="button">
+                Logout
+              </a>
+            {% else %}
+              <a href="/login" class="btn btn-outline-success" role="button">
+                Login
+              </a>
+            {% endif %}
+          </form>
+        {% endif %}
+      </div>
+    </nav>
+  </div>
+  <div class="container">
+    <div class="bg-light text-dark rounded-corners-bottom">
+      <div class="container">
         {% block content %}
         {% endblock %}
+      </div>
     </div>
   </div>
   <footer class="container">
