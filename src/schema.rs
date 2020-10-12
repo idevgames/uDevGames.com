@@ -1,7 +1,6 @@
 table! {
     attachments (id) {
         id -> Integer,
-        file -> Text,
         name -> Text,
         mime_type -> Text,
         md5 -> Binary,

@@ -1,7 +1,8 @@
 use crate::{
-    attachment::AttachmentStorage,
+    attachment::{ AttachmentStorage, AttachmentStorageError, },
     db::{ DbConn, DbPool }
 };
+use diesel::{ r2d2::PoolError, result::Error as DieselError, };
 use std::path::PathBuf;
 use thiserror::Error;
 
@@ -11,22 +12,33 @@ use thiserror::Error;
 pub enum ModelError {
     /// Failed to get a database connection.
     #[error("Couldn't get out of the pool with error {0}. Send a lifeguard.")]
-    PoolError(#[from] diesel::r2d2::PoolError),
+    PoolError(#[from] PoolError),
 
     /// Failed to query the database, or no result from the database when one
     /// was expected.
     #[error("Couldn't query the database with error {0}. Send a DBA.")]
-    DieselError(#[from] diesel::result::Error)
+    DieselError(#[from] DieselError),
+
+    #[error("The file {0} could not be found. Send in Search and Rescue")]
+    FileNotFoundError(PathBuf),
+
+    #[error("Could not store attachment with error {0}")]
+    AttachmentStorageError(#[from] AttachmentStorageError),
 }
+
+// Gets the most recently inserted row. Please only use this from within a
+// transaction to avoid threading adventures.
+no_arg_sql_function!(
+    last_insert_rowid,
+    diesel::sql_types::Integer,
+    "Represents the SQL last_insert_row() function"
+);
 
 /// An attachment, which is a file on disk.
 #[derive(Debug, Queryable)]
 pub struct Attachment {
     /// Unique id of this attachment.
     pub id: i32,
-
-    /// The file path of this attachment on disk.
-    pub file: String,
 
     /// The name of this attachment, which is the human or friendly name of it.
     pub name: String,
@@ -41,14 +53,61 @@ pub struct Attachment {
 }
 
 impl Attachment {
-    // /// Create a new attachment from a temporary file. Copies it to a permanent
-    // /// storage location and md5's it.
-    // pub fn new(
-    //     attachment_storage: &AttachmentStorage,
-    //     file: impl AsRef<PathBuf>, name: &str, mime_type: &str
-    // ) -> Result<Attachment, ModelError> {
+    pub fn create_p(
+        pool: &DbPool, attachment_storage: &AttachmentStorage,
+        file: impl AsRef<PathBuf>, name: &str, mime_type: &str
+    ) -> Result<Attachment, ModelError> {
+        let conn = pool.get()?;
+        Attachment::create_c(
+            &conn, &attachment_storage, &file, &name, &mime_type
+        )
+    }
 
-    // }
+    /// Create a new attachment from a temporary file. Copies it to a permanent
+    /// storage location and md5's it.
+    pub fn create_c(
+        conn: &DbConn, attachment_storage: &AttachmentStorage,
+        the_file: impl AsRef<PathBuf>, the_name: &str, the_mime_type: &str
+    ) -> Result<Attachment, ModelError> {
+        use crate::schema::attachments::dsl::{
+            attachments, id, name, mime_type, md5,
+        };
+        use diesel::prelude::*;
+
+        let the_file = the_file.as_ref();
+        
+        if !the_file.exists() {
+            return Err(ModelError::FileNotFoundError(the_file.clone()))
+        }
+
+        let attachment =
+            // transaction so last_insert_rowid doesn't do anything untoward
+            conn.transaction::<Attachment, DieselError, _>(|| {
+                diesel::insert_into(attachments)
+                    .values((
+                        name.eq(the_name), mime_type.eq(the_mime_type),
+                        md5.eq(vec![]) // how to insert binary data?
+                    ))
+                    .execute(conn)?;
+                let rowid = diesel::select(last_insert_rowid)
+                    .get_result::<i32>(conn)?;
+                Ok(
+                    attachments
+                        .filter(id.eq(rowid))
+                        .limit(1)
+                        .first::<Attachment>(conn)?
+                )
+            })?;
+
+        let mut stored_attachment =
+            attachment_storage.store(&the_file, attachment.id)?;
+
+        diesel::update(attachments)
+            .set(md5.eq(stored_attachment.get_or_compute_md5()?.to_vec()))
+            .execute(conn)?;
+
+        Ok(attachment)
+    }
 }
 
 /// Local cache of part of Github's understanding of who a user is. Particularly

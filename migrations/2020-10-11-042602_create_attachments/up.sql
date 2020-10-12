@@ -1,8 +1,7 @@
 -- attachments are files that can be served for download.
 CREATE TABLE attachments(
+    -- the path to the file on disk is the storage directory, plus the id
     id INTEGER PRIMARY KEY NOT NULL,
-    -- the path to the file on disk
-    file TEXT NOT NULL,
     -- the name of the file, for example as shown in the rich text editor
     name TEXT NOT NULL,
     -- the mime type of the file, which will be set on download so that images

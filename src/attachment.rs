@@ -38,20 +38,43 @@ impl AttachmentStorage {
     pub fn store(
         &self, file: &PathBuf, attachment_id: i32
     ) -> Result<StoredAttachment, AttachmentStorageError> {
-        let md5sum: [u8; 16] = md5_file(&file)?;
+        // place the file in the store by id
         let destination_path: PathBuf = {
             let mut path = self.storage_path.clone();
             path.push(attachment_id.to_string());
             path
         };
+
         rename(file, &destination_path)?;
-        Ok(StoredAttachment {
-            path: destination_path,
-            md5sum: Some(md5sum)
-        })
+
+        // compute the md5 - we do this on store so the attachments db can
+        // immediately be updated with the md5.
+        let mut stored_attachment = StoredAttachment {
+            path: destination_path, md5sum: None
+        };
+        stored_attachment.get_or_compute_md5()?;
+        
+        Ok(stored_attachment)
     }
 }
 
+impl StoredAttachment {
+    pub fn get_or_compute_md5(
+        &mut self
+    ) -> Result<[u8; 16], AttachmentStorageError> {
+        match self.md5sum {
+            None => {
+                let md5 = md5_file(&self.path)?;
+                self.md5sum = Some(md5);
+                Ok(md5)
+            },
+            Some(md5sum) => Ok(md5sum)
+        }
+    }
+}
+
+// TODO: digest as a stream, rather than reading the whole mess into memory
+// may need a different crate for that :(
 fn md5_file(file: &PathBuf) -> Result<[u8; 16], IOError> {
     let contents = read_file(&file)?;
     let digest = md5compute(&contents);
@@ -69,7 +92,7 @@ mod tests {
 
     /// This may look dumb to test... and it kind of is. But I wanted to make
     /// sure the digester was working in a way consistent with expectation. So I
-    /// wrote a test for it.
+    /// wrote a test for it. It didn't make sense to delete it.
     #[test]
     fn test_file_hashing() {
         let example_content = "this is an example";

@@ -2,7 +2,7 @@ use crate::db::DbPool;
 use crate::models::GhUserRecord;
 use crate::template_context::{ Breadcrumbs, BreadcrumbsContext };
 use reqwest::Client as ReqwestClient;
-use rocket::{ get, http::Cookie, http::Cookies, response::Responder, State };
+use rocket::{ get, http::Cookie, http::CookieJar, response::Responder, State };
 use rocket_contrib::templates::Template;
 use serde::{ Deserialize, Serialize };
 use thiserror::Error;
@@ -75,7 +75,7 @@ pub async fn gh_callback(
     gh_credentials: State<'_, GhCredentials>,
     gh_client: State<'_, ReqwestClient>,
     db_pool: State<'_, DbPool>,
-    mut cookies: Cookies<'_>,
+    cookies: &CookieJar<'_>,
     code: String
 ) -> Result<Template, GithubCallbackError> {
     let auth_result = auth_with_github(
@@ -258,7 +258,7 @@ async fn get_user_detail(
 
 /// Logs the user out. Pitches all the cookies we set.
 #[get("/logout")]
-pub async fn logout(mut cookies: Cookies<'_>) -> Template {
+pub async fn logout(cookies: &CookieJar<'_>) -> Template {
     cookies.remove_private(Cookie::named("gh_user_id"));
 
     #[derive(Debug, Serialize)]
