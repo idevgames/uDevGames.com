@@ -93,7 +93,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserOptional {
         };
 
         // pull the user out of the cookie, if it's there
-        let mut cookies = req.cookies();
+        let cookies = req.cookies();
         let user_id = cookies.get_private("gh_user_id");
 
         let u = match user_id {
@@ -109,7 +109,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserOptional {
                 };
 
                 let user =
-                    match GhUserRecord::find_by_id_c(&conn, uid) {
+                    match GhUserRecord::find_by_id(&conn, uid) {
                         Ok(u) => u,
                         Err(e) =>
                             return Outcome::Failure((
@@ -119,7 +119,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserOptional {
                     };
 
                 let permissions =
-                    match Permission::find_by_gh_user_id_c(&conn, uid) {
+                    match Permission::find_by_gh_user_id(&conn, uid) {
                         Ok(perms) => perms,
                         Err(e) =>
                             return Outcome::Failure((

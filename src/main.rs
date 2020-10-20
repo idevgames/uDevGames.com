@@ -19,7 +19,7 @@ mod template_context;
 use clap::Clap;
 use crate::attachment::AttachmentStorage;
 use crate::cliopts::{ Opts, SubCommand };
-use crate::db::{ DbPool, get_pool };
+use crate::db::{ DbConn, DbPool, get_pool };
 use crate::gh_oauth::GhCredentials;
 use crate::models::{ GhUserRecord, ModelError };
 use dotenv::dotenv;
@@ -70,6 +70,8 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
     use crate::cliopts::PermissionSubCommand;
     use crate::models::Permission;
 
+    let conn = pool.get().expect("Could not get a connection from the pool");
+
     match subcmd.subcmd {
         PermissionSubCommand::Grant(grant) => {
             let uid =
@@ -78,9 +80,9 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
                         "Could not infer user; is your login \
                         prefixed with @?"
                     )
-                    .uid(&pool)
+                    .uid(&conn)
                     .expect("Could not query database");
-            Permission::grant_permission_p(&pool, uid, &grant.permission)
+            Permission::grant_permission(&conn, uid, &grant.permission)
                 .expect("Could not grant permission");
             println!("Permission granted!");
         },
@@ -91,9 +93,9 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
                         "Could not infer user; is your login \
                         prefixed with @?"
                     )
-                    .uid(&pool)
+                    .uid(&conn)
                     .expect("Could not query database");
-            let r = Permission::revoke_permission_p(&pool, uid, &revoke.permission)
+            let r = Permission::revoke_permission(&conn, uid, &revoke.permission)
                 .expect("Could not revoke permission");
             println!("Revoked {} permissions", r);
         },
@@ -105,9 +107,9 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
                             "Could not infer user; is your login \
                             prefixed with @?"
                         )
-                        .uid(&pool)
+                        .uid(&conn)
                         .expect("Could not query database");
-                let perms = Permission::find_by_gh_user_id_p(&pool, uid)
+                let perms = Permission::find_by_gh_user_id(&conn, uid)
                     .expect("Could not query db");
                 
                 if perms.len() > 0 {
@@ -120,7 +122,7 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
                 }
             } else if show.permission.is_some() {
                 let perm = show.permission.unwrap();
-                let perms = Permission::find_by_name_p(&pool, &perm)
+                let perms = Permission::find_by_name(&conn, &perm)
                     .expect("Could not query db");
 
                 if perms.len() > 0 {
@@ -152,12 +154,12 @@ enum UserIdentity {
 
 impl UserIdentity {
     /// The uid for this identity.
-    fn uid(&self, pool: &DbPool) -> Result<i64, ModelError> {
+    fn uid(&self, conn: &DbConn) -> Result<i64, ModelError> {
         match self {
             UserIdentity::Id(id) => Ok(*id),
             UserIdentity::Login(_) =>
                 Ok(
-                    self.find(pool)
+                    self.find(conn)
                         .expect("Could not query db")
                         .expect("No such user")
                         .id
@@ -166,10 +168,10 @@ impl UserIdentity {
     }
 
     /// Find a GhUserRecord for this UserIdentity, if one exists.
-    fn find(&self, pool: &DbPool) -> Result<Option<GhUserRecord>, ModelError> {
+    fn find(&self, conn: &DbConn) -> Result<Option<GhUserRecord>, ModelError> {
         match self {
-            UserIdentity::Login(login) => GhUserRecord::find_by_login_p(&pool, login),
-            UserIdentity::Id(id) => GhUserRecord::find_by_id_p(&pool, *id)
+            UserIdentity::Login(login) => GhUserRecord::find_by_login(conn, login),
+            UserIdentity::Id(id) => GhUserRecord::find_by_id(conn, *id)
         }
     }
 

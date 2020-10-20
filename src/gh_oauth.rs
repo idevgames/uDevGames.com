@@ -206,13 +206,17 @@ struct UserResponse {
 /// Error states for `get_or_update_user_detail`.
 #[derive(Error, Debug)]
 enum GetOrUpdateUserDetailError {
+    /// We couldn't get a connection from the pool.
+    #[error("Couldn't get a connection from the pool with error {0}.")]
+    DbConnError(#[from] diesel::r2d2::PoolError),
+
     /// We couldn't get or save the user to the database.
     #[error("Couldn't load data with error {0}. Call a DBA.")]
     DbLoadError(#[from] crate::models::ModelError),
 
     /// We couldn't get the user details from Github.
     #[error("Could not retrieve user details from Github with error {0}")]
-    GetUserDetailError(#[from] GetUserDetailError)
+    GetUserDetailError(#[from] GetUserDetailError),
 }
 
 /// Gets the user's details from Github (user id and login, most importantly),
@@ -226,8 +230,8 @@ async fn get_or_update_user_detail(
     let user = get_user_detail(
         &gh_client, &authorization.access_token
     ).await?;
-    let gh_user_record = GhUserRecord::find_and_update_p(
-        &db_pool, user.id, &user.login, &user.avatar_url, &user.html_url
+    let gh_user_record = GhUserRecord::find_and_update(
+        &db_pool.get()?, user.id, &user.login, &user.avatar_url, &user.html_url
     )?;
 
     Ok(gh_user_record)
