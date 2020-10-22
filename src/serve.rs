@@ -1,5 +1,5 @@
 use crate::{
-    attachment::AttachmentStorage, db::DbPool, gh_oauth::GhCredentials,
+    attachments::AttachmentStorage, db::DbPool, gh_oauth::GhCredentials,
 };
 use rocket::routes;
 use rocket::config::{
@@ -26,6 +26,7 @@ pub async fn serve(
         // TODO: compression fairing would be nice here
         .mount("/", routes![
             crate::homepage::homepage,
+            crate::attachments::get_attachment,
             crate::gh_oauth::login_with_github,
             crate::gh_oauth::gh_callback,
             crate::gh_oauth::logout,

@@ -2,6 +2,7 @@ table! {
     attachments (id) {
         id -> Integer,
         name -> Text,
+        published -> Bool,
         mime_type -> Text,
         md5 -> Binary,
     }

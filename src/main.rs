@@ -5,7 +5,7 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
-mod attachment;
+mod attachments;
 mod cliopts;
 mod db;
 mod homepage;
@@ -17,7 +17,7 @@ mod serve;
 mod template_context;
 
 use clap::Clap;
-use crate::attachment::AttachmentStorage;
+use crate::attachments::AttachmentStorage;
 use crate::cliopts::{ Opts, SubCommand };
 use crate::db::{ DbConn, DbPool, get_pool };
 use crate::gh_oauth::GhCredentials;

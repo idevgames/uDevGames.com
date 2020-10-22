@@ -4,6 +4,9 @@ CREATE TABLE attachments(
     id INTEGER PRIMARY KEY NOT NULL,
     -- the name of the file, for example as shown in the rich text editor
     name TEXT NOT NULL,
+    -- whether or not we should show this to just anyone - really a way to turn
+    -- off serving files without deleting them outright.
+    published BOOLEAN NOT NULL DEFAULT TRUE,
     -- the mime type of the file, which will be set on download so that images
     -- behave like images, etc.
     mime_type TEXT NOT NULL,

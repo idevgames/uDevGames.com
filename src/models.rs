@@ -1,5 +1,5 @@
 use crate::{
-    attachment::{ AttachmentStorage, AttachmentStorageError, },
+    attachments::{ AttachmentStorage, AttachmentStorageError, },
     db::DbConn
 };
 use diesel::{ r2d2::PoolError, result::Error as DieselError, };
@@ -42,6 +42,9 @@ pub struct Attachment {
 
     /// The name of this attachment, which is the human or friendly name of it.
     pub name: String,
+
+    /// Whether or not this attachment is visible to the world.
+    pub published: bool,
 
     /// The MIME type, such as `image/png`, which is stored so that they can be
     /// served up idiomatically.
@@ -97,6 +100,42 @@ impl Attachment {
             .execute(conn)?;
 
         Ok(attachment)
+    }
+
+    /// Finds an attachment by its id, if it exists.
+    pub fn find_by_id(
+        conn: &DbConn, attachment_id: i32
+    ) -> Result<Option<Attachment>, ModelError> {
+        use crate::schema::attachments::dsl::{
+            attachments, id
+        };
+        use diesel::prelude::*;
+
+        let attachment = attachments
+            .filter(id.eq(attachment_id))
+            .limit(1)
+            .first::<Attachment>(conn);
+
+        r_to_opt(attachment)
+    }
+
+    /// Finds an attachment by its id, if it exists, and only if it is
+    /// published.
+    pub fn find_published_by_id(
+        conn: &DbConn, attachment_id: i32
+    ) -> Result<Option<Attachment>, ModelError> {
+        use crate::schema::attachments::dsl::{
+            attachments, id, published
+        };
+        use diesel::prelude::*;
+
+        let attachment = attachments
+            .filter(id.eq(attachment_id))
+            .filter(published.eq(true))
+            .limit(1)
+            .first::<Attachment>(conn);
+
+        r_to_opt(attachment)
     }
 }
 
