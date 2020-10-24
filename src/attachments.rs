@@ -48,7 +48,7 @@ pub async fn get_attachment(
         Ok(conn) => conn,
         Err(e) => return Err(GetAttachmentError::PoolError(
             format!("{:?}", e)
-        ))
+        )),
     };
     let attachment = match Attachment::find_published_by_id(&conn, id) {
         Ok(attachment) => match attachment {
@@ -59,16 +59,14 @@ pub async fn get_attachment(
         },
         Err(e) => return Err(GetAttachmentError::DbError(
             format!("{:?}", e)
-        ))
+        )),
     };
     let f = match attachment_storage.load(attachment.id) {
         Ok(f) => f,
         Err(AttachmentStorageError::NotFound(path)) =>
             return Err(GetAttachmentError::FileNotFound(format!("{:?}", path))),
         Err(AttachmentStorageError::IoError(e)) =>
-            return Err(GetAttachmentError::IoError(
-                format!("{:?}", e)
-            ))
+            return Err(GetAttachmentError::IoError(format!("{:?}", e))),
     };
     Ok(Stream::from(File::from_std(f)))
 }
