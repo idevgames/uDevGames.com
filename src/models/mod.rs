@@ -1,15 +1,17 @@
+//! Models put an abstraction between controller or "business logic" code and
+//! the database itself. They hide SQL queries and include logic which is
+//! intended to keep the database consistent. You should never manipulate the
+//! database directly from either command-line tool or controller code.
+
 mod attachments;
 mod gh_user_records;
 mod permissions;
 
 use crate::attachments::AttachmentStorageError;
-pub use crate::models::{
-    attachments::*, gh_user_records::*, permissions::*,
-};
-use diesel::{ r2d2::PoolError, result::Error as DieselError, };
+pub use crate::models::{attachments::*, gh_user_records::*, permissions::*};
+use diesel::{r2d2::PoolError, result::Error as DieselError};
 use std::path::PathBuf;
 use thiserror::Error;
-
 
 /// An error common to model helper functions.
 #[derive(Error, Debug)]
@@ -33,7 +35,7 @@ pub enum ModelError {
 // Gets the most recently inserted row. Please only use this from within a
 // transaction to avoid threading adventures.
 no_arg_sql_function!(
-    last_insert_rowid,
+    LastInsertRowid,
     diesel::sql_types::Integer,
     "Represents the SQL last_insert_row() function"
 );
@@ -41,12 +43,10 @@ no_arg_sql_function!(
 /// Converts a diesel result, which packages the absence of a record as an
 /// error, into an Option, which makes dealing with "I'm okay with something not
 /// being present" slightly more Rustic.
-fn r_to_opt<T>(
-    r: Result<T, diesel::result::Error>
-) -> Result<Option<T>, ModelError> {
+fn r_to_opt<T>(r: Result<T, diesel::result::Error>) -> Result<Option<T>, ModelError> {
     match r {
         Ok(t) => Ok(Some(t)),
         Err(diesel::NotFound) => Ok(None),
-        Err(e) => Err(ModelError::DieselError(e))
+        Err(e) => Err(ModelError::DieselError(e)),
     }
 }

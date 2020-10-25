@@ -1,11 +1,10 @@
 use crate::{
     attachments::AttachmentStorage,
     db::DbConn,
-    models::{ last_insert_rowid, ModelError, r_to_opt, },
+    models::{r_to_opt, LastInsertRowid, ModelError},
 };
 use diesel::result::Error as DieselError;
 use std::path::PathBuf;
-
 
 /// An attachment, which is a file on disk.
 #[derive(Debug, Queryable)]
@@ -32,18 +31,19 @@ impl Attachment {
     /// Create a new attachment from a temporary file. Copies it to a permanent
     /// storage location and md5's it.
     pub fn create(
-        conn: &DbConn, attachment_storage: &AttachmentStorage,
-        the_file: impl AsRef<PathBuf>, the_name: &str, the_mime_type: &str
+        conn: &DbConn,
+        attachment_storage: &AttachmentStorage,
+        the_file: impl AsRef<PathBuf>,
+        the_name: &str,
+        the_mime_type: &str,
     ) -> Result<Attachment, ModelError> {
-        use crate::schema::attachments::dsl::{
-            attachments, id, name, mime_type, md5,
-        };
+        use crate::schema::attachments::dsl::{attachments, id, md5, mime_type, name};
         use diesel::prelude::*;
 
         let the_file = the_file.as_ref();
-        
+
         if !the_file.exists() {
-            return Err(ModelError::FileNotFoundError(the_file.clone()))
+            return Err(ModelError::FileNotFoundError(the_file.clone()));
         }
 
         let attachment =
@@ -55,7 +55,7 @@ impl Attachment {
                         md5.eq(vec![]) // how to insert binary data?
                     ))
                     .execute(conn)?;
-                let rowid = diesel::select(last_insert_rowid)
+                let rowid = diesel::select(LastInsertRowid)
                     .get_result::<i32>(conn)?;
                 Ok(
                     attachments
@@ -65,8 +65,7 @@ impl Attachment {
                 )
             })?;
 
-        let mut stored_attachment =
-            attachment_storage.store(&the_file, attachment.id)?;
+        let mut stored_attachment = attachment_storage.store(&the_file, attachment.id)?;
 
         diesel::update(attachments)
             .set(md5.eq(stored_attachment.get_or_compute_md5()?.to_vec()))
@@ -76,12 +75,8 @@ impl Attachment {
     }
 
     /// Finds an attachment by its id, if it exists.
-    pub fn find_by_id(
-        conn: &DbConn, attachment_id: i32
-    ) -> Result<Option<Attachment>, ModelError> {
-        use crate::schema::attachments::dsl::{
-            attachments, id
-        };
+    pub fn find_by_id(conn: &DbConn, attachment_id: i32) -> Result<Option<Attachment>, ModelError> {
+        use crate::schema::attachments::dsl::{attachments, id};
         use diesel::prelude::*;
 
         let attachment = attachments
@@ -95,11 +90,10 @@ impl Attachment {
     /// Finds an attachment by its id, if it exists, and only if it is
     /// published.
     pub fn find_published_by_id(
-        conn: &DbConn, attachment_id: i32
+        conn: &DbConn,
+        attachment_id: i32,
     ) -> Result<Option<Attachment>, ModelError> {
-        use crate::schema::attachments::dsl::{
-            attachments, id, published
-        };
+        use crate::schema::attachments::dsl::{attachments, id, published};
         use diesel::prelude::*;
 
         let attachment = attachments

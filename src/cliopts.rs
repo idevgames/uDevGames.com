@@ -1,40 +1,39 @@
-use clap::{ Clap, crate_authors, crate_version };
-
+use clap::{crate_authors, crate_version, Clap};
 
 #[derive(Clap)]
 #[clap(version = crate_version!(), author = crate_authors!())]
 pub struct Opts {
     #[clap(subcommand)]
-    pub subcmd: SubCommand
+    pub subcmd: SubCommand,
 }
 
 #[derive(Clap)]
 pub enum SubCommand {
     Migrate(Migrate),
     Serve(Serve),
-    Permission(Permission)
+    Permission(Permission),
 }
 
 /// Migrates the uDevGames database to the current schema
 #[derive(Clap)]
-pub struct Migrate { }
+pub struct Migrate {}
 
 /// Starts the uDevGames website
 #[derive(Clap)]
-pub struct Serve { }
+pub struct Serve {}
 
 /// Grant, revoke, and show permissions given to users
 #[derive(Clap)]
 pub struct Permission {
     #[clap(subcommand)]
-    pub subcmd: PermissionSubCommand
+    pub subcmd: PermissionSubCommand,
 }
 
 #[derive(Clap)]
 pub enum PermissionSubCommand {
     Grant(PermissionGrant),
     Revoke(PermissionRevoke),
-    Show(PermissionShow)
+    Show(PermissionShow),
 }
 
 /// Grants a permission to a user
@@ -46,7 +45,7 @@ pub struct PermissionGrant {
 
     /// The permission to grant to the user
     #[clap(short, long)]
-    pub permission: String
+    pub permission: String,
 }
 
 /// Revokes a permission from a user
@@ -58,7 +57,7 @@ pub struct PermissionRevoke {
 
     /// The permission to revoke from the user
     #[clap(short, long)]
-    pub permission: String
+    pub permission: String,
 }
 
 /// Show permissions for a user, or users with a permission
@@ -70,5 +69,5 @@ pub struct PermissionShow {
 
     /// Show all users with this permission
     #[clap(short, long)]
-    pub permission: Option<String>
+    pub permission: Option<String>,
 }

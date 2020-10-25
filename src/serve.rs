@@ -1,24 +1,20 @@
-use crate::{
-    attachments::AttachmentStorage,
-    db::DbPool,
-    controllers::gh_oauth::GhCredentials,
-};
-use rocket::{
-    figment::Figment,
-    routes,
-    config::Config as RocketConfig,
-};
+use crate::{attachments::AttachmentStorage, controllers::gh_oauth::GhCredentials, db::DbPool};
+use rocket::{config::Config as RocketConfig, figment::Figment, routes};
 use rocket_contrib::{
-//    compression::Compression,
+    //    compression::Compression,
     helmet::SpaceHelmet,
+    serve::{crate_relative, StaticFiles},
     templates::Template,
-    serve::{ crate_relative, StaticFiles, },
 };
-
 
 pub async fn serve(
-    address: String, port: u16, workers: u16, secret: String, db_pool: DbPool,
-    gh_credentials: GhCredentials, attachment_storage: AttachmentStorage
+    address: String,
+    port: u16,
+    workers: u16,
+    secret: String,
+    db_pool: DbPool,
+    gh_credentials: GhCredentials,
+    attachment_storage: AttachmentStorage,
 ) {
     let config = Figment::from(RocketConfig::default())
         .merge(("address", address))
@@ -32,17 +28,19 @@ pub async fn serve(
         .manage(db_pool)
         .manage(attachment_storage)
         .attach(Template::fairing())
-//        .attach(Compression::fairing())
+        //        .attach(Compression::fairing())
         .attach(SpaceHelmet::default())
-        .mount("/", routes![
-            crate::controllers::homepage::homepage,
-            crate::controllers::attachments::get_attachment,
-            crate::controllers::gh_oauth::login_with_github,
-            crate::controllers::gh_oauth::gh_callback,
-            crate::controllers::gh_oauth::logout,
-        ])
+        .mount(
+            "/",
+            routes![
+                crate::controllers::homepage::homepage,
+                crate::controllers::attachments::get_attachment,
+                crate::controllers::gh_oauth::login_with_github,
+                crate::controllers::gh_oauth::gh_callback,
+                crate::controllers::gh_oauth::logout,
+            ],
+        )
         .mount("/static", StaticFiles::from(crate_relative!("/static")))
         .launch()
         .await;
 }
-

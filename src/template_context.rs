@@ -1,11 +1,16 @@
 ///! The name is a little sloppy but it's just generally stuff that has to do
 ///! with the template system.
-use crate::{ db::DbPool, models::{ GhUserRecord, ModelError, Permission } };
-use rocket::{ http::Status, request::{ FromRequest, Outcome, Request } };
+use crate::{
+    db::DbPool,
+    models::{GhUserRecord, ModelError, Permission},
+};
+use rocket::{
+    http::Status,
+    request::{FromRequest, Outcome, Request},
+};
 use serde::Serialize;
 use std::num::ParseIntError;
 use thiserror::Error;
-
 
 /// Request guard for which there may or may not be a logged in user. This is
 /// for pages which can be viewed by anyone but which may change their controls
@@ -52,14 +57,15 @@ impl UserOptional {
         return UserOptionalContext {
             user: match &self.user {
                 Some(u) => Some(UserOptionalContextUser {
-                    id: u.id, login: u.login.clone(),
+                    id: u.id,
+                    login: u.login.clone(),
                     html_url: u.html_url.clone(),
                     avatar_url: u.avatar_url.clone(),
-                    permissions: self.permissions.clone()
+                    permissions: self.permissions.clone(),
                 }),
-                None => None
-            }
-        }
+                None => None,
+            },
+        };
     }
 }
 
@@ -73,7 +79,7 @@ pub enum UserOptionalError {
     UserIdDecodeError(#[from] ParseIntError),
 
     #[error("Could not query the database with error {0}")]
-    DbQueryError(#[from] ModelError)
+    DbQueryError(#[from] ModelError),
 }
 
 #[rocket::async_trait]
@@ -86,10 +92,12 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserOptional {
         let pool = req.managed_state::<DbPool>().unwrap();
         let conn = match pool.get() {
             Ok(conn) => conn,
-            Err(e) => return Outcome::Failure((
-                Status::InternalServerError,
-                UserOptionalError::DbPoolError(e)
-            ))
+            Err(e) => {
+                return Outcome::Failure((
+                    Status::InternalServerError,
+                    UserOptionalError::DbPoolError(e),
+                ))
+            }
         };
 
         // pull the user out of the cookie, if it's there
@@ -101,41 +109,47 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserOptional {
                 let value = cookie.value();
                 let uid = match str::parse::<i64>(value) {
                     Ok(uid) => uid,
-                    Err(e) =>
+                    Err(e) => {
                         return Outcome::Failure((
                             Status::BadRequest,
-                            UserOptionalError::UserIdDecodeError(e)
+                            UserOptionalError::UserIdDecodeError(e),
                         ))
+                    }
                 };
 
-                let user =
-                    match GhUserRecord::find_by_id(&conn, uid) {
-                        Ok(u) => u,
-                        Err(e) =>
-                            return Outcome::Failure((
-                                Status::BadRequest,
-                                UserOptionalError::DbQueryError(e)
-                            ))
-                    };
+                let user = match GhUserRecord::find_by_id(&conn, uid) {
+                    Ok(u) => u,
+                    Err(e) => {
+                        return Outcome::Failure((
+                            Status::BadRequest,
+                            UserOptionalError::DbQueryError(e),
+                        ))
+                    }
+                };
 
-                let permissions =
-                    match Permission::find_by_gh_user_id(&conn, uid) {
-                        Ok(perms) => perms,
-                        Err(e) =>
-                            return Outcome::Failure((
-                                Status::BadRequest,
-                                UserOptionalError::DbQueryError(e)
-                            ))
-                    };
+                let permissions = match Permission::find_by_gh_user_id(&conn, uid) {
+                    Ok(perms) => perms,
+                    Err(e) => {
+                        return Outcome::Failure((
+                            Status::BadRequest,
+                            UserOptionalError::DbQueryError(e),
+                        ))
+                    }
+                };
 
                 UserOptional {
                     user,
-                    permissions: permissions.iter()
+                    permissions: permissions
+                        .iter()
                         // TODO: would Cow work here?
-                        .map(|perm| perm.name.clone()).collect()
+                        .map(|perm| perm.name.clone())
+                        .collect(),
                 }
+            }
+            None => UserOptional {
+                user: None,
+                permissions: vec![],
             },
-            None => UserOptional { user: None, permissions: vec![] }
         };
 
         Outcome::Success(u)
@@ -149,7 +163,7 @@ pub struct Breadcrumbs(Vec<Breadcrumb>);
 /// navbars, but please don't do that.
 pub enum Breadcrumb {
     /// Will link to the homepage.
-    Home
+    Home,
 }
 
 /// Unwraps the concept of a breadcrumb from a higher-level abstraction into a
@@ -170,22 +184,21 @@ impl Breadcrumbs {
     /// Creates a new Breadcrumbs, with the home page added if the crumbs are
     /// empty.
     pub fn from_crumbs(crumbs: Vec<Breadcrumb>) -> Breadcrumbs {
-        Breadcrumbs(
-            if crumbs.is_empty() {
-                vec![Breadcrumb::Home]
-            } else {
-                crumbs
-            }
-        )
+        Breadcrumbs(if crumbs.is_empty() {
+            vec![Breadcrumb::Home]
+        } else {
+            crumbs
+        })
     }
 
     /// Convert these Breadcrumbs to something that can be put into a template
     /// context.
     pub fn to_context(&self) -> BreadcrumbsContext {
         BreadcrumbsContext(
-            self.0.iter()
+            self.0
+                .iter()
                 .map(|crumb| crumb.to_breadcrumb_context())
-                .collect()
+                .collect(),
         )
     }
 }
@@ -193,7 +206,7 @@ impl Breadcrumbs {
 impl Breadcrumb {
     fn to_breadcrumb_context(&self) -> BreadcrumbContext {
         match self {
-            Breadcrumb::Home => BreadcrumbContext::new("Home", "/")
+            Breadcrumb::Home => BreadcrumbContext::new("Home", "/"),
         }
     }
 }
@@ -210,7 +223,7 @@ impl BreadcrumbContext {
 #[cfg(test)]
 mod tests {
     use crate::template_context::*;
-    use rocket_contrib::templates::tera::{ Context, Tera, };
+    use rocket_contrib::templates::tera::{Context, Tera};
 
     /// Validates the detection of a logged in user in a template. If this
     /// breaks (highly unlikely) then a number of templates also need to be
@@ -220,27 +233,37 @@ mod tests {
         let none_context = UserOptionalContext { user: None };
         let some_context = UserOptionalContext {
             user: Some(UserOptionalContextUser {
-                id: 1, login: "ed".to_string(), html_url: "".to_string(),
+                id: 1,
+                login: "ed".to_string(),
+                html_url: "".to_string(),
                 avatar_url: "".to_string(),
-                permissions: vec!["admin".to_string()]
-            })
+                permissions: vec!["admin".to_string()],
+            }),
         };
         let mut tera = Tera::default();
-        tera.add_raw_template("example.html", "
+        tera.add_raw_template(
+            "example.html",
+            "
             {% if user is object %}
             The user is logged in!
             {% else %}
             There is no user logged in.
             {% endif %}
-        ").unwrap();
-        let none_result = tera.render(
-            "example.html",
-            &Context::from_serialize(&none_context).unwrap()
-        ).unwrap();
-        let some_result = tera.render(
-            "example.html",
-            &Context::from_serialize(&some_context).unwrap()
-        ).unwrap();
+        ",
+        )
+        .unwrap();
+        let none_result = tera
+            .render(
+                "example.html",
+                &Context::from_serialize(&none_context).unwrap(),
+            )
+            .unwrap();
+        let some_result = tera
+            .render(
+                "example.html",
+                &Context::from_serialize(&some_context).unwrap(),
+            )
+            .unwrap();
         assert_eq!("There is no user logged in.", none_result.trim());
         assert_eq!("The user is logged in!", some_result.trim());
     }

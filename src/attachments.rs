@@ -1,11 +1,10 @@
 use md5::compute as md5compute;
 use std::{
-    fs::{ read as read_file, rename, },
+    fs::{read as read_file, rename},
     io::Error as IOError,
     path::PathBuf,
 };
 use thiserror::Error;
-
 
 #[derive(Debug, Error)]
 pub enum AttachmentStorageError {
@@ -39,7 +38,9 @@ impl AttachmentStorage {
     /// Stores the file with the given attachment id. The original file is
     /// consumed.
     pub fn store(
-        &self, file: &PathBuf, attachment_id: i32
+        &self,
+        file: &PathBuf,
+        attachment_id: i32,
     ) -> Result<StoredAttachment, AttachmentStorageError> {
         // place the file in the store by id
         let destination_path: PathBuf = {
@@ -53,17 +54,16 @@ impl AttachmentStorage {
         // compute the md5 - we do this on store so the attachments db can
         // immediately be updated with the md5.
         let mut stored_attachment = StoredAttachment {
-            path: destination_path, md5sum: None
+            path: destination_path,
+            md5sum: None,
         };
         stored_attachment.get_or_compute_md5()?;
-        
+
         Ok(stored_attachment)
     }
 
     /// Loads an attachment out of storage, returning a File for it.
-    pub fn load(
-        &self, attachment_id: i32
-    ) -> Result<std::fs::File, AttachmentStorageError> {
+    pub fn load(&self, attachment_id: i32) -> Result<std::fs::File, AttachmentStorageError> {
         let storage_path = {
             let mut path = self.storage_path.clone();
             path.push(attachment_id.to_string());
@@ -79,16 +79,14 @@ impl AttachmentStorage {
 }
 
 impl StoredAttachment {
-    pub fn get_or_compute_md5(
-        &mut self
-    ) -> Result<[u8; 16], AttachmentStorageError> {
+    pub fn get_or_compute_md5(&mut self) -> Result<[u8; 16], AttachmentStorageError> {
         match self.md5sum {
             None => {
                 let md5 = md5_file(&self.path)?;
                 self.md5sum = Some(md5);
                 Ok(md5)
-            },
-            Some(md5sum) => Ok(md5sum)
+            }
+            Some(md5sum) => Ok(md5sum),
         }
     }
 }
@@ -116,8 +114,7 @@ mod tests {
     #[test]
     fn test_file_hashing() {
         let example_content = "this is an example";
-        let expected_sum = 
-            hex_decode("9202816dabaaf34bb106a10421b9a0d0").unwrap();
+        let expected_sum = hex_decode("9202816dabaaf34bb106a10421b9a0d0").unwrap();
         let file = tempfile::NamedTempFile::new().unwrap();
         write!(&file, "{}", example_content).unwrap();
         let actual_sum = md5_file(&file.path().to_path_buf()).unwrap();

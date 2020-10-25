@@ -1,12 +1,11 @@
 use crate::db::DbPool;
 use crate::models::GhUserRecord;
-use crate::template_context::{ Breadcrumbs, BreadcrumbsContext };
+use crate::template_context::{Breadcrumbs, BreadcrumbsContext};
 use reqwest::Client as ReqwestClient;
-use rocket::{ get, http::Cookie, http::CookieJar, response::Responder, State };
+use rocket::{get, http::Cookie, http::CookieJar, response::Responder, State};
 use rocket_contrib::templates::Template;
-use serde::{ Deserialize, Serialize };
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
-
 
 /// Describes the two bits of information needed from Github itself to
 /// successfully complete an OAuth workflow with them. These need to be loaded
@@ -62,7 +61,7 @@ pub enum GithubCallbackError {
     /// An error authorizing the user. While is this destructured to a String
     /// here, I'm not totally sure that's the right way in the long term.
     #[response(status = 500)]
-    AuthError(String)
+    AuthError(String),
 }
 
 /// Github will redirect users to this URL on successful authentication with a
@@ -76,20 +75,14 @@ pub async fn gh_callback(
     gh_client: State<'_, ReqwestClient>,
     db_pool: State<'_, DbPool>,
     cookies: &CookieJar<'_>,
-    code: String
+    code: String,
 ) -> Result<Template, GithubCallbackError> {
-    let auth_result = auth_with_github(
-        &gh_client, &db_pool, &gh_credentials, &code
-    ).await;
+    let auth_result = auth_with_github(&gh_client, &db_pool, &gh_credentials, &code).await;
     let user_record = match auth_result {
         Ok(user_record) => user_record,
-        Err(e) => return Err(
-            GithubCallbackError::AuthError(format!("{:?}", e))
-        )
+        Err(e) => return Err(GithubCallbackError::AuthError(format!("{:?}", e))),
     };
-    let cookie = Cookie::new(
-        "gh_user_id", user_record.id.to_string()
-    );
+    let cookie = Cookie::new("gh_user_id", user_record.id.to_string());
 
     cookies.add_private(cookie);
 
@@ -112,7 +105,9 @@ pub async fn gh_callback(
 /// ignore the other fields as they are not relevant to us.
 #[derive(Deserialize)]
 struct AuthorizationResponse {
-    access_token: String, token_type: String, scope: String,
+    access_token: String,
+    token_type: String,
+    scope: String,
 }
 
 impl std::fmt::Debug for AuthorizationResponse {
@@ -124,8 +119,10 @@ impl std::fmt::Debug for AuthorizationResponse {
     /// we have successfully protected our users.
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
-            f, "AuthorizationResponse {{ access_token: REDACTED, token_type: \
-                {}, scope: {} }}", self.token_type, self.scope
+            f,
+            "AuthorizationResponse {{ access_token: REDACTED, token_type: \
+                {}, scope: {} }}",
+            self.token_type, self.scope
         )
     }
 }
@@ -140,22 +137,20 @@ enum AuthWithGithubError {
     /// Errored calling `get_or_update_user_detail` due to a database or
     /// network issues.
     #[error("Could not query or update the database with error {0}")]
-    DatabaseError(#[from] GetOrUpdateUserDetailError)
+    DatabaseError(#[from] GetOrUpdateUserDetailError),
 }
 
 /// Authenticates with Github by exchanging the access code the user gave us for
 /// an access token that Github issues us. Fetches the user's details from
 /// Github and persists them to the database.
 async fn auth_with_github(
-    gh_client: &ReqwestClient, db_pool: &DbPool,
-    gh_credentials: &GhCredentials, code: &String
+    gh_client: &ReqwestClient,
+    db_pool: &DbPool,
+    gh_credentials: &GhCredentials,
+    code: &String,
 ) -> Result<GhUserRecord, AuthWithGithubError> {
-    let authorization = get_access_token(
-        &gh_client, &gh_credentials, &code
-    ).await?;
-    let user = get_or_update_user_detail(
-        &gh_client, &db_pool, &authorization
-    ).await?;
+    let authorization = get_access_token(&gh_client, &gh_credentials, &code).await?;
+    let user = get_or_update_user_detail(&gh_client, &db_pool, &authorization).await?;
 
     Ok(user)
 }
@@ -165,22 +160,23 @@ async fn auth_with_github(
 enum GetAccessTokenError {
     /// Failed to query Github with some flavor of HTTP error.
     #[error("Could not add header with error {0}")]
-    HttpError(#[from] reqwest::Error)
+    HttpError(#[from] reqwest::Error),
 }
 
 /// Exchange our access code for an access token.
 async fn get_access_token(
-    gh_client: &ReqwestClient, gh_credentials: &GhCredentials, code: &String
+    gh_client: &ReqwestClient,
+    gh_credentials: &GhCredentials,
+    code: &String,
 ) -> Result<AuthorizationResponse, GetAccessTokenError> {
     let params = [
         ("client_id", gh_credentials.client_id.as_str()),
         ("client_secret", gh_credentials.client_secret.as_str()),
-        ("code", code.as_str())
+        ("code", code.as_str()),
     ];
 
-    let r = gh_client.post(
-            "https://github.com/login/oauth/access_token"
-        )
+    let r = gh_client
+        .post("https://github.com/login/oauth/access_token")
         .form(&params)
         .header("Accept", "application/json")
         .send()
@@ -200,7 +196,10 @@ async fn get_access_token(
 /// might become useful in the future, though it's not a sure thing.
 #[derive(Deserialize, Debug)]
 struct UserResponse {
-    id: i64, login: String, avatar_url: String, html_url: String
+    id: i64,
+    login: String,
+    avatar_url: String,
+    html_url: String,
 }
 
 /// Error states for `get_or_update_user_detail`.
@@ -225,13 +224,15 @@ enum GetOrUpdateUserDetailError {
 async fn get_or_update_user_detail(
     gh_client: &ReqwestClient,
     db_pool: &DbPool,
-    authorization: &AuthorizationResponse
+    authorization: &AuthorizationResponse,
 ) -> Result<GhUserRecord, GetOrUpdateUserDetailError> {
-    let user = get_user_detail(
-        &gh_client, &authorization.access_token
-    ).await?;
+    let user = get_user_detail(&gh_client, &authorization.access_token).await?;
     let gh_user_record = GhUserRecord::find_and_update(
-        &db_pool.get()?, user.id, &user.login, &user.avatar_url, &user.html_url
+        &db_pool.get()?,
+        user.id,
+        &user.login,
+        &user.avatar_url,
+        &user.html_url,
     )?;
 
     Ok(gh_user_record)
@@ -242,14 +243,16 @@ async fn get_or_update_user_detail(
 enum GetUserDetailError {
     /// Error getting the user's details from Github.
     #[error("Could not request user detail from Github with error {0}")]
-    HttpError(#[from] reqwest::Error)
+    HttpError(#[from] reqwest::Error),
 }
 
 /// Gets the user's details from Github.
 async fn get_user_detail(
-    gh_client: &ReqwestClient, access_token: &String
+    gh_client: &ReqwestClient,
+    access_token: &String,
 ) -> Result<UserResponse, GetUserDetailError> {
-   let r = gh_client.get("https://api.github.com/user")
+    let r = gh_client
+        .get("https://api.github.com/user")
         .header("Authorization", format!("token {}", access_token))
         .header("Accept", "application/json")
         .send()
@@ -271,9 +274,8 @@ pub async fn logout(cookies: &CookieJar<'_>) -> Template {
     }
 
     let context = Context {
-        breadcrumbs: Breadcrumbs::from_crumbs(vec![]).to_context()
+        breadcrumbs: Breadcrumbs::from_crumbs(vec![]).to_context(),
     };
 
     Template::render("logout", &context)
 }
-

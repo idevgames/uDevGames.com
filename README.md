@@ -13,7 +13,7 @@ https://docs.rs/openssl/0.10.29/openssl/.
 To manage the database migrations install the Diesel CLI.
 
 ```bash
-sudo apt-get install -y libsqlite3-dev # or equivalent on your os
+sudo apt-get install -y libssl-dev libsqlite3-dev # or equivalent on your os
 cargo install diesel_cli --no-default-features --features sqlite
 diesel setup
 ```
