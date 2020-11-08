@@ -1,4 +1,4 @@
-use crate::template_context::{UserOptional, UserOptionalContext};
+use crate::template_helpers::{UserOptional, UserOptionalContext};
 use rocket::get;
 use rocket_contrib::templates::Template;
 use serde::Serialize;

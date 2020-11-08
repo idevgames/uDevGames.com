@@ -1,5 +1,5 @@
-///! The name is a little sloppy but it's just generally stuff that has to do
-///! with the template system.
+//! This request guard is also a template helper because it provides the user
+//! and permissions to a template context.
 use crate::{
     db::DbPool,
     models::{GhUserRecord, ModelError, Permission},
@@ -127,15 +127,16 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserOptional {
                     }
                 };
 
-                let permissions = match Permission::find_by_gh_user_id(&conn, uid) {
-                    Ok(perms) => perms,
-                    Err(e) => {
-                        return Outcome::Failure((
-                            Status::BadRequest,
-                            UserOptionalError::DbQueryError(e),
-                        ))
-                    }
-                };
+                let permissions =
+                    match Permission::find_by_gh_user_id(&conn, uid) {
+                        Ok(perms) => perms,
+                        Err(e) => {
+                            return Outcome::Failure((
+                                Status::BadRequest,
+                                UserOptionalError::DbQueryError(e),
+                            ))
+                        }
+                    };
 
                 UserOptional {
                     user,
@@ -156,73 +157,9 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserOptional {
     }
 }
 
-/// Drives the navbar's breadcrumbs to show hierarchy and stuff.
-pub struct Breadcrumbs(Vec<Breadcrumb>);
-
-/// A piece in the navbar. You can order these arbitrarily to create nonsensical
-/// navbars, but please don't do that.
-pub enum Breadcrumb {
-    /// Will link to the homepage.
-    Home,
-}
-
-/// Unwraps the concept of a breadcrumb from a higher-level abstraction into a
-/// form compatible with the template engine. This should always be in the
-/// `breadcrumbs` field of a template context. To suppress the navbar completely
-/// simply do not supply a `BreadcrumbsContext` at all.
-#[derive(Debug, Serialize)]
-pub struct BreadcrumbsContext(Vec<BreadcrumbContext>);
-
-/// The individual piece of a breadcrumb handed off to a template.
-#[derive(Debug, Serialize)]
-pub struct BreadcrumbContext {
-    content: String,
-    href: String,
-}
-
-impl Breadcrumbs {
-    /// Creates a new Breadcrumbs, with the home page added if the crumbs are
-    /// empty.
-    pub fn from_crumbs(crumbs: Vec<Breadcrumb>) -> Breadcrumbs {
-        Breadcrumbs(if crumbs.is_empty() {
-            vec![Breadcrumb::Home]
-        } else {
-            crumbs
-        })
-    }
-
-    /// Convert these Breadcrumbs to something that can be put into a template
-    /// context.
-    pub fn to_context(&self) -> BreadcrumbsContext {
-        BreadcrumbsContext(
-            self.0
-                .iter()
-                .map(|crumb| crumb.to_breadcrumb_context())
-                .collect(),
-        )
-    }
-}
-
-impl Breadcrumb {
-    fn to_breadcrumb_context(&self) -> BreadcrumbContext {
-        match self {
-            Breadcrumb::Home => BreadcrumbContext::new("Home", "/"),
-        }
-    }
-}
-
-impl BreadcrumbContext {
-    fn new(content: &str, href: &str) -> BreadcrumbContext {
-        BreadcrumbContext {
-            content: content.to_string(),
-            href: href.to_string(),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::template_context::*;
+    use crate::template_helpers::user_optional::*;
     use rocket_contrib::templates::tera::{Context, Tera};
 
     /// Validates the detection of a logged in user in a template. If this

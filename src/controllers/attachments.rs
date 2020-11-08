@@ -38,7 +38,9 @@ pub async fn get_attachment(
 ) -> Result<Stream<File>, GetAttachmentError> {
     let conn = match pool.get() {
         Ok(conn) => conn,
-        Err(e) => return Err(GetAttachmentError::PoolError(format!("{:?}", e))),
+        Err(e) => {
+            return Err(GetAttachmentError::PoolError(format!("{:?}", e)))
+        }
     };
     let attachment = match Attachment::find_published_by_id(&conn, id) {
         Ok(attachment) => match attachment {

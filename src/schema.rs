@@ -22,6 +22,10 @@ table! {
         id -> Integer,
         submitter_user_id -> BigInt,
         approval_state -> Integer,
+        title -> Text,
+        slug -> Text,
+        summary -> Text,
+        summary_attachment_id -> Integer,
         rich_text_id -> Integer,
     }
 }
@@ -30,6 +34,9 @@ table! {
     jam_entry_updates (id) {
         id -> Integer,
         jam_entry_id -> Integer,
+        title -> Text,
+        slug -> Text,
+        summary -> Text,
         rich_text_id -> Nullable<Integer>,
         external_content_url -> Nullable<Text>,
         approval_state -> Integer,
@@ -39,9 +46,13 @@ table! {
 table! {
     jams (id) {
         id -> Integer,
+        title -> Text,
+        slug -> Text,
+        summary -> Text,
+        summary_attachment_id -> Integer,
         rich_text_id -> Integer,
-        start_date -> Nullable<Binary>,
-        end_date -> Nullable<Binary>,
+        start_date -> Text,
+        end_date -> Text,
         approval_state -> Integer,
     }
 }

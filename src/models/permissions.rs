@@ -23,7 +23,10 @@ pub struct Permission {
 
 impl Permission {
     /// Finds all permissions on a given user.
-    pub fn find_by_gh_user_id(conn: &DbConn, user_id: i64) -> Result<Vec<Permission>, ModelError> {
+    pub fn find_by_gh_user_id(
+        conn: &DbConn,
+        user_id: i64,
+    ) -> Result<Vec<Permission>, ModelError> {
         use crate::schema::permissions::dsl::*;
         use diesel::prelude::*;
 
@@ -60,8 +63,11 @@ impl Permission {
         use diesel::prelude::*;
 
         // if an existing equivalent permission exists, nop
-        let existing_permission =
-            Permission::find_by_user_id_and_name(&conn, user_id, &permission_name)?;
+        let existing_permission = Permission::find_by_user_id_and_name(
+            &conn,
+            user_id,
+            &permission_name,
+        )?;
 
         if existing_permission.is_some() {
             return Ok(());

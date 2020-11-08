@@ -63,7 +63,10 @@ impl AttachmentStorage {
     }
 
     /// Loads an attachment out of storage, returning a File for it.
-    pub fn load(&self, attachment_id: i32) -> Result<std::fs::File, AttachmentStorageError> {
+    pub fn load(
+        &self,
+        attachment_id: i32,
+    ) -> Result<std::fs::File, AttachmentStorageError> {
         let storage_path = {
             let mut path = self.storage_path.clone();
             path.push(attachment_id.to_string());
@@ -79,7 +82,9 @@ impl AttachmentStorage {
 }
 
 impl StoredAttachment {
-    pub fn get_or_compute_md5(&mut self) -> Result<[u8; 16], AttachmentStorageError> {
+    pub fn get_or_compute_md5(
+        &mut self,
+    ) -> Result<[u8; 16], AttachmentStorageError> {
         match self.md5sum {
             None => {
                 let md5 = md5_file(&self.path)?;
@@ -114,7 +119,8 @@ mod tests {
     #[test]
     fn test_file_hashing() {
         let example_content = "this is an example";
-        let expected_sum = hex_decode("9202816dabaaf34bb106a10421b9a0d0").unwrap();
+        let expected_sum =
+            hex_decode("9202816dabaaf34bb106a10421b9a0d0").unwrap();
         let file = tempfile::NamedTempFile::new().unwrap();
         write!(&file, "{}", example_content).unwrap();
         let actual_sum = md5_file(&file.path().to_path_buf()).unwrap();

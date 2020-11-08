@@ -8,6 +8,15 @@ CREATE TABLE jam_entries(
     -- or "rejected" (8). the approval system is there to prevent malicious
     -- actors from spamming the site.
     approval_state INTEGER NOT NULL DEFAULT 0,
+    -- the title of this jam entry
+    title TEXT NOT NULL,
+    -- the slug of this jam entry, which is part of the url and makes it easy
+    -- for users to see what they're going to read when passing around the url.
+    slug TEXT NOT NULL,
+    -- a summary text which can appear in a list of jame entries.
+    summary TEXT NOT NULL,
+    -- summary image, which is an attachment.
+    summary_attachment_id INTEGER NOT NULL,
     -- the text of this entry
     rich_text_id INTEGER NOT NULL
 );

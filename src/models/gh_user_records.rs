@@ -41,7 +41,9 @@ impl GhUserRecord {
 
         match GhUserRecord::find_by_id(conn, gh_id)? {
             Some(u) => {
-                if gh_login != u.login || gh_avatar_url != u.avatar_url || gh_html_url != u.html_url
+                if gh_login != u.login
+                    || gh_avatar_url != u.avatar_url
+                    || gh_html_url != u.html_url
                 {
                     diesel::update(gh_user_records.find(gh_id))
                         .set((
@@ -68,7 +70,10 @@ impl GhUserRecord {
     }
 
     /// Finds a given GhUserRecord by its id.
-    pub fn find_by_id(conn: &DbConn, gh_user_id: i64) -> Result<Option<GhUserRecord>, ModelError> {
+    pub fn find_by_id(
+        conn: &DbConn,
+        gh_user_id: i64,
+    ) -> Result<Option<GhUserRecord>, ModelError> {
         use crate::schema::gh_user_records::dsl::*;
         use diesel::prelude::*;
 

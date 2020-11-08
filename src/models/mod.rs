@@ -5,12 +5,16 @@
 
 mod attachments;
 mod gh_user_records;
+mod jams;
 mod permissions;
+mod rich_texts;
 
 use crate::attachments::AttachmentStorageError;
-pub use crate::models::{attachments::*, gh_user_records::*, permissions::*};
+pub use crate::models::{
+    attachments::*, gh_user_records::*, jams::*, permissions::*, rich_texts::*,
+};
 use diesel::{r2d2::PoolError, result::Error as DieselError};
-use std::path::PathBuf;
+use std::{path::PathBuf, convert::TryInto};
 use thiserror::Error;
 
 /// An error common to model helper functions.
@@ -43,10 +47,34 @@ no_arg_sql_function!(
 /// Converts a diesel result, which packages the absence of a record as an
 /// error, into an Option, which makes dealing with "I'm okay with something not
 /// being present" slightly more Rustic.
-fn r_to_opt<T>(r: Result<T, diesel::result::Error>) -> Result<Option<T>, ModelError> {
+fn r_to_opt<T>(
+    r: Result<T, diesel::result::Error>,
+) -> Result<Option<T>, ModelError> {
     match r {
         Ok(t) => Ok(Some(t)),
         Err(diesel::NotFound) => Ok(None),
         Err(e) => Err(ModelError::DieselError(e)),
+    }
+}
+
+pub enum ApprovalState {
+    Draft = 0, Submitted = 2, Approved = 4, Rejected = 8
+}
+
+pub enum ApprovalStateDeserializationError {
+    BadValue(i32)
+}
+
+impl TryInto<ApprovalState> for i32 {
+    type Error = ApprovalStateDeserializationError;
+
+    fn try_into(self) -> Result<ApprovalState, Self::Error> {
+        match self {
+            0 => Ok(ApprovalState::Draft),
+            2 => Ok(ApprovalState::Submitted),
+            4 => Ok(ApprovalState::Approved),
+            8 => Ok(ApprovalState::Rejected),
+            val => Err(ApprovalStateDeserializationError::BadValue(val))
+        }
     }
 }

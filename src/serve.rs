@@ -1,4 +1,7 @@
-use crate::{attachments::AttachmentStorage, controllers::gh_oauth::GhCredentials, db::DbPool};
+use crate::{
+    attachments::AttachmentStorage, controllers::gh_oauth::GhCredentials,
+    db::DbPool,
+};
 use rocket::{config::Config as RocketConfig, figment::Figment, routes};
 use rocket_contrib::{
     //    compression::Compression,
@@ -38,6 +41,7 @@ pub async fn serve(
                 crate::controllers::gh_oauth::login_with_github,
                 crate::controllers::gh_oauth::gh_callback,
                 crate::controllers::gh_oauth::logout,
+                crate::controllers::jams::create_jam,
             ],
         )
         .mount("/static", StaticFiles::from(crate_relative!("/static")))

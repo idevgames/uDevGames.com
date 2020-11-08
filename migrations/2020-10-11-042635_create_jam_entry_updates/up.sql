@@ -10,6 +10,13 @@ CREATE TABLE jam_entry_updates(
     id INTEGER PRIMARY KEY NOT NULL,
     -- the jam entry this is attached to
     jam_entry_id INTEGER NOT NULL,
+    -- the title of this update
+    title TEXT NOT NULL,
+    -- the slug of this update, which is part of the url and makes it easy for
+    -- users to see what they're going to read when passing around the url.
+    slug TEXT NOT NULL,
+    -- a summary text which can appear in a list of updates.
+    summary TEXT NOT NULL,
     -- the rich text content this applies to.
     -- should not be present if external_content_url is present.
     rich_text_id INTEGER,

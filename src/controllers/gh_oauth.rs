@@ -1,6 +1,6 @@
 use crate::db::DbPool;
 use crate::models::GhUserRecord;
-use crate::template_context::{Breadcrumbs, BreadcrumbsContext};
+use crate::template_helpers::{Breadcrumbs, BreadcrumbsContext};
 use reqwest::Client as ReqwestClient;
 use rocket::{get, http::Cookie, http::CookieJar, response::Responder, State};
 use rocket_contrib::templates::Template;
@@ -77,10 +77,13 @@ pub async fn gh_callback(
     cookies: &CookieJar<'_>,
     code: String,
 ) -> Result<Template, GithubCallbackError> {
-    let auth_result = auth_with_github(&gh_client, &db_pool, &gh_credentials, &code).await;
+    let auth_result =
+        auth_with_github(&gh_client, &db_pool, &gh_credentials, &code).await;
     let user_record = match auth_result {
         Ok(user_record) => user_record,
-        Err(e) => return Err(GithubCallbackError::AuthError(format!("{:?}", e))),
+        Err(e) => {
+            return Err(GithubCallbackError::AuthError(format!("{:?}", e)))
+        }
     };
     let cookie = Cookie::new("gh_user_id", user_record.id.to_string());
 
@@ -149,8 +152,10 @@ async fn auth_with_github(
     gh_credentials: &GhCredentials,
     code: &String,
 ) -> Result<GhUserRecord, AuthWithGithubError> {
-    let authorization = get_access_token(&gh_client, &gh_credentials, &code).await?;
-    let user = get_or_update_user_detail(&gh_client, &db_pool, &authorization).await?;
+    let authorization =
+        get_access_token(&gh_client, &gh_credentials, &code).await?;
+    let user =
+        get_or_update_user_detail(&gh_client, &db_pool, &authorization).await?;
 
     Ok(user)
 }

@@ -13,7 +13,7 @@ mod migrate;
 mod models;
 mod schema;
 mod serve;
-mod template_context;
+mod template_helpers;
 
 use crate::attachments::AttachmentStorage;
 use crate::cliopts::{Opts, SubCommand};
@@ -42,9 +42,9 @@ async fn main() {
             crate::db::migrate_db(&db_pool);
         }
         SubCommand::Serve(_) => {
-            let attachment_storage = AttachmentStorage::new(PathBuf::from(expect_env_string(
-                "UDEVGAMES_ATTACHMENT_STORAGE",
-            )));
+            let attachment_storage = AttachmentStorage::new(PathBuf::from(
+                expect_env_string("UDEVGAMES_ATTACHMENT_STORAGE"),
+            ));
             let gh_credentials = GhCredentials {
                 client_id: expect_env_string("GH_CLIENT_ID"),
                 client_secret: expect_env_string("GH_CLIENT_SECRET"),
@@ -94,8 +94,9 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
                 )
                 .uid(&conn)
                 .expect("Could not query database");
-            let r = Permission::revoke_permission(&conn, uid, &revoke.permission)
-                .expect("Could not revoke permission");
+            let r =
+                Permission::revoke_permission(&conn, uid, &revoke.permission)
+                    .expect("Could not revoke permission");
             println!("Revoked {} permissions", r);
         }
         PermissionSubCommand::Show(show) => {
@@ -107,7 +108,8 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
                     )
                     .uid(&conn)
                     .expect("Could not query database");
-                let perms = Permission::find_by_gh_user_id(&conn, uid).expect("Could not query db");
+                let perms = Permission::find_by_gh_user_id(&conn, uid)
+                    .expect("Could not query db");
 
                 if perms.len() > 0 {
                     println!("Permissions for user {}", uid);
@@ -119,11 +121,15 @@ fn perms_subcmd(pool: &DbPool, subcmd: crate::cliopts::Permission) {
                 }
             } else if show.permission.is_some() {
                 let perm = show.permission.unwrap();
-                let perms = Permission::find_by_name(&conn, &perm).expect("Could not query db");
+                let perms = Permission::find_by_name(&conn, &perm)
+                    .expect("Could not query db");
 
                 if perms.len() > 0 {
                     for perm in perms {
-                        println!("User {} has permission {}", perm.gh_user_id, perm.name);
+                        println!(
+                            "User {} has permission {}",
+                            perm.gh_user_id, perm.name
+                        );
                     }
                 } else {
                     println!("No users have the permission {}", perm);
@@ -161,7 +167,9 @@ impl UserIdentity {
     /// Find a GhUserRecord for this UserIdentity, if one exists.
     fn find(&self, conn: &DbConn) -> Result<Option<GhUserRecord>, ModelError> {
         match self {
-            UserIdentity::Login(login) => GhUserRecord::find_by_login(conn, login),
+            UserIdentity::Login(login) => {
+                GhUserRecord::find_by_login(conn, login)
+            }
             UserIdentity::Id(id) => GhUserRecord::find_by_id(conn, *id),
         }
     }
@@ -181,8 +189,10 @@ impl TryFrom<String> for UserIdentity {
 }
 
 fn expect_env_string(var: &str) -> String {
-    env::var(var)
-        .expect(format!("Please provide {} as an environment var or in a .env", var).as_str())
+    env::var(var).expect(
+        format!("Please provide {} as an environment var or in a .env", var)
+            .as_str(),
+    )
 }
 
 fn expect_env_u16(var: &str) -> u16 {

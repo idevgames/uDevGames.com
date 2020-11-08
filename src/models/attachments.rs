@@ -37,7 +37,9 @@ impl Attachment {
         the_name: &str,
         the_mime_type: &str,
     ) -> Result<Attachment, ModelError> {
-        use crate::schema::attachments::dsl::{attachments, id, md5, mime_type, name};
+        use crate::schema::attachments::dsl::{
+            attachments, id, md5, mime_type, name,
+        };
         use diesel::prelude::*;
 
         let the_file = the_file.as_ref();
@@ -65,7 +67,8 @@ impl Attachment {
                 )
             })?;
 
-        let mut stored_attachment = attachment_storage.store(&the_file, attachment.id)?;
+        let mut stored_attachment =
+            attachment_storage.store(&the_file, attachment.id)?;
 
         diesel::update(attachments)
             .set(md5.eq(stored_attachment.get_or_compute_md5()?.to_vec()))
@@ -75,7 +78,10 @@ impl Attachment {
     }
 
     /// Finds an attachment by its id, if it exists.
-    pub fn find_by_id(conn: &DbConn, attachment_id: i32) -> Result<Option<Attachment>, ModelError> {
+    pub fn find_by_id(
+        conn: &DbConn,
+        attachment_id: i32,
+    ) -> Result<Option<Attachment>, ModelError> {
         use crate::schema::attachments::dsl::{attachments, id};
         use diesel::prelude::*;
 
