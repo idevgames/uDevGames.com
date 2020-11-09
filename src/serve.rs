@@ -42,6 +42,7 @@ pub async fn serve(
                 crate::controllers::gh_oauth::gh_callback,
                 crate::controllers::gh_oauth::logout,
                 crate::controllers::jams::create_jam,
+                crate::controllers::jams::edit_jam,
             ],
         )
         .mount("/static", StaticFiles::from(crate_relative!("/static")))
