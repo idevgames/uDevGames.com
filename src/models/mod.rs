@@ -13,8 +13,12 @@ use crate::attachments::AttachmentStorageError;
 pub use crate::models::{
     attachments::*, gh_user_records::*, jams::*, permissions::*, rich_texts::*,
 };
-use diesel::{r2d2::PoolError, result::Error as DieselError};
-use std::{path::PathBuf, convert::TryInto};
+use diesel::{
+    backend::Backend, deserialize, r2d2::PoolError,
+    result::Error as DieselError, serialize, serialize::Output,
+    sql_types::Integer, types::FromSql, types::ToSql,
+};
+use std::{io::Write, path::PathBuf};
 use thiserror::Error;
 
 /// An error common to model helper functions.
@@ -57,24 +61,38 @@ fn r_to_opt<T>(
     }
 }
 
+#[repr(i32)]
+#[derive(Debug, Clone, Copy, FromSqlRow, AsExpression)]
+#[sql_type = "Integer"]
 pub enum ApprovalState {
-    Draft = 0, Submitted = 2, Approved = 4, Rejected = 8
+    Draft = 0,
+    Submitted = 2,
+    Approved = 4,
+    Rejected = 8,
 }
 
-pub enum ApprovalStateDeserializationError {
-    BadValue(i32)
-}
-
-impl TryInto<ApprovalState> for i32 {
-    type Error = ApprovalStateDeserializationError;
-
-    fn try_into(self) -> Result<ApprovalState, Self::Error> {
-        match self {
+impl<DB> FromSql<Integer, DB> for ApprovalState
+where
+    DB: Backend,
+    i32: FromSql<Integer, DB>,
+{
+    fn from_sql(bytes: Option<&DB::RawValue>) -> deserialize::Result<Self> {
+        match i32::from_sql(bytes)? {
             0 => Ok(ApprovalState::Draft),
             2 => Ok(ApprovalState::Submitted),
             4 => Ok(ApprovalState::Approved),
             8 => Ok(ApprovalState::Rejected),
-            val => Err(ApprovalStateDeserializationError::BadValue(val))
+            val => Err(format!("Unrecognized variant {}", val).into()),
         }
+    }
+}
+
+impl<DB> ToSql<Integer, DB> for ApprovalState
+where
+    DB: Backend,
+    i32: ToSql<Integer, DB>,
+{
+    fn to_sql<W: Write>(&self, out: &mut Output<W, DB>) -> serialize::Result {
+        (*self as i32).to_sql(out)
     }
 }

@@ -16,11 +16,11 @@ CREATE TABLE jams(
     -- when does the jam "start." most of these are super informal and if you
     -- get a head start people will actually be happy for you. stored as text
     -- in ISO-8601.
-    start_date TEXT NOT NULL,
+    start_date TIMESTAMP NOT NULL,
     -- the end date, a totally artificial and contrived end date designed to
     -- help you gamify your own productivity into pushing just a little harder.
     -- stored as text in ISO-8601.
-    end_date TEXT NOT NULL,
+    end_date TIMESTAMP NOT NULL,
     -- the approval state, one of "draft" (0), "submitted" (2), "approved" (4),
     -- or "rejected" (8). the approval system is there to prevent malicious
     -- actors from spamming the site, but in this case is here to allow the

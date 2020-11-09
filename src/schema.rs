@@ -49,10 +49,10 @@ table! {
         title -> Text,
         slug -> Text,
         summary -> Text,
-        summary_attachment_id -> Integer,
+        summary_attachment_id -> Nullable<Integer>,
         rich_text_id -> Integer,
-        start_date -> Text,
-        end_date -> Text,
+        start_date -> Timestamp,
+        end_date -> Timestamp,
         approval_state -> Integer,
     }
 }

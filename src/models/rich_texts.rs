@@ -7,8 +7,8 @@ use pulldown_cmark::{html, Options, Parser};
 
 #[derive(Debug, Queryable)]
 pub struct RichText {
-    id: i32,
-    content: String,
+    pub id: i32,
+    pub content: String,
 }
 
 impl RichText {
