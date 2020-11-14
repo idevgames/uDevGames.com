@@ -5,7 +5,7 @@ community.
 
 ## Developing
 
-To work on this site, you need Rust (nightly toolchain for now).
+To work on this site, you need Rust.
 
 To build, first make sure your system is configured for openssl-sys crate:
 https://docs.rs/openssl/0.10.29/openssl/.
