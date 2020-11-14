@@ -45,6 +45,34 @@ locally to a `.env` file and filling it in per the instruction in the file.
 
 Happy hacking!
 
+## Project structure
+
+Unless you know better ones.
+
+- `src/models` has a bunch of Rust structs that try to abstract over raw Diesel
+  SQL calls. In general the business logic of interacting with the database and
+  obeying related constraints is here.
+- `src/controllers` has a bunch of servlet-style handlers for individual REST
+  routes. They glue together views, models, and view helpers. Try to keep these
+  relatively lean.
+- `src/template_helpers` is a weird combo of Rust on Rocket
+  [request guards](https://rocket.rs/v0.4/guide/requests/#request-guards) that
+  can also transform themselves into serializable structs which get fed into
+  templates.
+- `templates` has a bunch of [tera](https://tera.netlify.app/docs/) templates.
+  Tera is a Jinja2 implementation in Rust. In general pages will inherit from
+  `layout`.
+- `migrations` has a bunch of plain SQL migrations which Diesel can run.
+- `static` has a few images and the very important `site.css` file.
+
+The project uses a very weak RBAC authorization implementation by tacking
+stringly-typed roles onto user records. Having the string means you have the
+role.
+
+Most heavy admin (approving things as public and modifying user roles) is done
+through a CLI interface, purely because I was lazy and didn't want to write web
+interface for it.
+
 ## Modification/Licensing
 
 We want you to be able to use this software regardless of who you may be, what
