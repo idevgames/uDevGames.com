@@ -6,6 +6,7 @@ extern crate diesel;
 extern crate diesel_migrations;
 
 mod attachments;
+mod error_handlers;
 mod cliopts;
 mod controllers;
 mod db;
