@@ -6,7 +6,7 @@
       {% if auth.user is object %}
         Hello, {{ auth.user.login }}. You can <a href="/logout">logout</a> now.
       {% else %}
-        Hello unknown user, would you like to <a href="/login_with_github">login</a>?
+        Hello unknown user, would you like to <a href="/login">login</a>?
       {% endif %}
     </p>
   </div>
