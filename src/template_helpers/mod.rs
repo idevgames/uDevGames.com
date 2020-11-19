@@ -58,7 +58,7 @@ fn auth_from_request<'a, 'r>(
     let cookies = req.cookies();
     let user_id = cookies.get_private("gh_user_id");
 
-    let u = match user_id {
+    match user_id {
         Some(cookie) => {
             let value = cookie.value();
             let uid = str::parse::<i64>(value)?;

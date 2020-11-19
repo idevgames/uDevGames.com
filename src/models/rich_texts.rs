@@ -5,6 +5,8 @@ use crate::{
 use diesel::result::Error as DieselError;
 use pulldown_cmark::{html, Options, Parser};
 
+use super::r_to_opt;
+
 #[derive(Debug, Queryable)]
 pub struct RichText {
     pub id: i32,
@@ -34,16 +36,29 @@ impl RichText {
         Ok(rich_text)
     }
 
-    /// Updates an existing RichText.
-    pub fn update(
+    /// Find a rich text by id.
+    pub fn find_by_id(
         conn: &DbConn,
-        rich_text: &RichText,
-    ) -> Result<(), ModelError> {
+        rich_text_id: i32,
+    ) -> Result<Option<RichText>, ModelError> {
         use crate::schema::rich_texts::dsl::*;
         use diesel::prelude::*;
 
-        diesel::update(rich_texts.find(rich_text.id))
-            .set(content.eq(&rich_text.content))
+        let rich_text = rich_texts
+            .filter(id.eq(rich_text_id))
+            .limit(1)
+            .first::<RichText>(conn);
+
+        r_to_opt(rich_text)
+    }
+
+    /// Updates an existing RichText.
+    pub fn update(&self, conn: &DbConn) -> Result<(), ModelError> {
+        use crate::schema::rich_texts::dsl::{content, rich_texts};
+        use diesel::prelude::*;
+
+        diesel::update(rich_texts.find(self.id))
+            .set(content.eq(&self.content))
             .execute(conn)?;
 
         Ok(())

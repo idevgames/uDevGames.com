@@ -71,6 +71,37 @@ pub enum ApprovalState {
     Rejected = 8,
 }
 
+pub enum ApprovalStateParseError {
+    UnrecognizedApprovalState(String),
+}
+
+impl ApprovalState {
+    pub fn from_human_str(s: &str) -> Result<Self, ApprovalStateParseError> {
+        Ok(match s {
+            "Draft" => ApprovalState::Draft,
+            "Submitted" => ApprovalState::Submitted,
+            "Approved" => ApprovalState::Approved,
+            "Rejected" => ApprovalState::Rejected,
+            _ => {
+                return Err(ApprovalStateParseError::UnrecognizedApprovalState(
+                    s.to_string(),
+                ))
+            }
+        })
+    }
+
+    /// Format the ApprovalState as something we can show to humans on the
+    /// Internet.
+    pub fn to_human_str(&self) -> String {
+        match self {
+            ApprovalState::Draft => "Draft".to_string(),
+            ApprovalState::Submitted => "Submitted".to_string(),
+            ApprovalState::Approved => "Approved".to_string(),
+            ApprovalState::Rejected => "Rejected".to_string(),
+        }
+    }
+}
+
 impl<DB> FromSql<Integer, DB> for ApprovalState
 where
     DB: Backend,
