@@ -7,6 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.34"
 chrono = "0.4.19"
 clap = "3.0.0-beta.2"
 diesel = { version = "1.4.5", features = [ "chrono", "sqlite", "r2d2" ] }
@@ -18,7 +19,7 @@ serde = { version = "1.0.117", features = [ "derive" ] }
 thiserror = "1.0.22"
 
 [dependencies.reqwest]
-version = "0.10.8"
+version = "0.10.9"
 features = [ "json" ]
 
 [dependencies.rocket]
