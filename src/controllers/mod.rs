@@ -28,6 +28,18 @@ pub enum HandlerError {
 
     #[error("Failed to store/retrieve attachment with error {0}")]
     AttachmentStorageError(#[from] crate::attachments::AttachmentStorageError),
+
+    #[error("HTTP Error {0}")]
+    HttpError(#[from] reqwest::Error),
+
+    #[error("Parse Error {0}")]
+    ParseError(#[from] chrono::ParseError),
+
+    #[error("Diesel Error {0}")]
+    DieselError(#[from] diesel::result::Error),
+
+    #[error("Approval State Parse Error {0}")]
+    ApprovalStateParseError(#[from] crate::models::ApprovalStateParseError),
 }
 
 impl<'r, 'o: 'r> Responder<'r, 'o> for HandlerError {
@@ -36,6 +48,10 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for HandlerError {
             HandlerError::AttachmentStorageError(_) => Status::InternalServerError,
             HandlerError::DatabaseError(_) => Status::InternalServerError,
             HandlerError::PoolError(_) => Status::InternalServerError,
+            HandlerError::HttpError(_) => Status::InternalServerError,
+            HandlerError::ParseError(_) => Status::InternalServerError,
+            HandlerError::ApprovalStateParseError(_) => Status::InternalServerError,
+            HandlerError::DieselError(_) => Status::InternalServerError,
             HandlerError::NotFound => Status::NotFound,
         })
     }
