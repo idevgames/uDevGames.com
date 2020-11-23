@@ -26,41 +26,14 @@ use crate::{
 // CREATE   /jams/:jam_id/attachments                   create an attachment for this jam
 //                                  -> Result<Attachment>
 
-/// Errors that may be encountered when creating a new jam.
-#[derive(Responder)]
-pub enum CreateJamError {
-    /// Couldn't get out of the pool. Send a lifeguard.
-    #[response(status = 500)]
-    PoolError(String),
-
-    /// Couldn't use the database. Send a DBA.
-    #[response(status = 500)]
-    DatabaseError(String),
-}
-
 /// Creates a new blank jam and immediately redirects to its edit page.
 #[post("/jams")]
 pub async fn create_jam(
-    db_pool: State<'_, DbPool>,
+    pool: State<'_, DbPool>,
     _admin_only: AdminOnly,
-) -> Result<Redirect, CreateJamError> {
-    let conn = match db_pool.get() {
-        Ok(conn) => conn,
-        Err(e) => {
-            return Err(CreateJamError::PoolError(format!(
-            "Couldn't get out of the pool with error {:?}. Send a lifeguard.",
-            e
-        )))
-        }
-    };
-
-    let jam = match Jam::create(&conn) {
-        Ok(jam) => jam,
-        Err(e) => {
-            return Err(CreateJamError::DatabaseError(format!("{:?}", e)))
-        }
-    };
-
+) -> Result<Redirect, super::HandlerError> {
+    let conn = pool.get()?;
+    let jam = Jam::create(&conn)?;
     Ok(Redirect::to(uri!(edit_jam: jam.id)))
 }
 
@@ -89,72 +62,23 @@ struct EditJamContext {
     auth: AdminOnlyContext,
     jam: JamContext,
 }
-/// Errors that may  be encountered when editing a jam.
-#[derive(Responder)]
-pub enum EditJamError {
-    /// Couldn't get out of the pool. Send a lifeguard.
-    #[response(status = 500)]
-    PoolError(String),
-
-    /// Couldn't use the database. Send a DBA.
-    #[response(status = 500)]
-    DatabaseError(String),
-
-    /// The user requested a jam that does not exist.
-    #[response(status = 404)]
-    NoSuchJam(String),
-
-    /// The Jam is found but references a RichText that doesn't exist.
-    #[response(status = 404)]
-    NoAttachedText(String),
-}
 
 /// Renders out a lovely form that you can use to edit the jam.
 #[get("/jams/<jam_id>/edit")]
 pub async fn edit_jam(
-    db_pool: State<'_, DbPool>,
+    pool: State<'_, DbPool>,
     admin_only: AdminOnly,
     jam_id: i32,
-) -> Result<Template, EditJamError> {
-    let conn = match db_pool.get() {
-        Ok(conn) => conn,
-        Err(e) => {
-            return Err(EditJamError::PoolError(format!(
-            "Couldn't get out of the pool with error {:?}. Send a lifeguard.",
-            e)))
-        }
+) -> Result<Template, super::HandlerError> {
+    let conn = pool.get()?;
+    let jam = match Jam::find_by_id(&conn, jam_id)? {
+        Some(jam) => jam,
+        None => return Err(super::HandlerError::NotFound),
     };
 
-    let jam = match Jam::find_by_id(&conn, jam_id) {
-        Ok(Some(jam)) => jam,
-        Ok(None) => {
-            return Err(EditJamError::NoSuchJam(format!(
-                "No Jam with ID {}",
-                jam_id
-            )))
-        }
-        Err(e) => {
-            return Err(EditJamError::DatabaseError(format!(
-                "Could not retrieve jam with error {:?}",
-                e
-            )))
-        }
-    };
-
-    let rich_text = match RichText::find_by_id(&conn, jam.rich_text_id) {
-        Ok(Some(rich_text)) => rich_text,
-        Ok(None) => {
-            return Err(EditJamError::NoAttachedText(format!(
-                "No RichText entry with ID {}",
-                jam.rich_text_id
-            )))
-        }
-        Err(e) => {
-            return Err(EditJamError::DatabaseError(format!(
-                "Could not retrieve rich text with error {:?}",
-                e
-            )))
-        }
+    let rich_text = match RichText::find_by_id(&conn, jam.rich_text_id)? {
+        Some(rich_text) => rich_text,
+        None => return Err(super::HandlerError::NotFound),
     };
 
     let context = EditJamContext {
@@ -228,111 +152,35 @@ pub struct JamFormData {
 
 #[post("/jams/<jam_id>", data = "<jam_form_data>")]
 pub async fn update_jam(
-    db_pool: State<'_, DbPool>,
+    pool: State<'_, DbPool>,
     admin_only: AdminOnly,
     jam_id: i32,
     jam_form_data: Form<JamFormData>,
-) -> Result<Template, UpdateJamError> {
-    let conn = match db_pool.get() {
-        Ok(conn) => conn,
-        Err(e) => {
-            return Err(UpdateJamError::PoolError(format!(
-                "Couldn't get out of the pool with error {:?}",
-                e
-            )))
-        }
-    };
+) -> Result<Template, super::HandlerError> {
+    let conn = pool.get()?;
 
     // do operations in a transaction so that all the updates roll back on
     // failure
-    let txr = conn.transaction::<(Jam, RichText), UpdateJamError, _>(|| {
-        let mut jam = match Jam::find_by_id(&conn, jam_id) {
-            Ok(Some(jam)) => jam,
-            Ok(None) => {
-                return Err(UpdateJamError::NoSuchJam(format!(
-                    "No Jam with ID {}",
-                    jam_id
-                )))
-            }
-            Err(e) => {
-                return Err(UpdateJamError::DatabaseError(format!(
-                    "Could not retrieve from database with error {:?}",
-                    e
-                )))
-            }
+    let txr = conn.transaction::<(Jam, RichText), super::HandlerError, _>(|| {
+        let mut jam = match Jam::find_by_id(&conn, jam_id)? {
+            Some(jam) => jam,
+            None => return Err(super::HandlerError::NotFound),
         };
-        let mut rich_text = match RichText::find_by_id(&conn, jam.rich_text_id)
-        {
-            Ok(Some(rich_text)) => rich_text,
-            Ok(None) => {
-                return Err(UpdateJamError::NoAttachedText(format!(
-                    "No rich text entry with ID {}",
-                    jam.rich_text_id
-                )))
-            }
-            Err(e) => {
-                return Err(UpdateJamError::DatabaseError(format!(
-                    "Could not retrieve from database with error {:?}",
-                    e
-                )))
-            }
+        let mut rich_text = match RichText::find_by_id(&conn, jam.rich_text_id)? {
+            Some(rich_text) => rich_text,
+            None => return Err(super::HandlerError::NotFound),
         };
 
         jam.title = jam_form_data.title.clone();
         jam.slug = jam_form_data.slug.clone();
         jam.summary = jam_form_data.summary.clone();
-        jam.start_date = match jam_form_data.start_date.parse::<NaiveDateTime>()
-        {
-            Ok(t) => t,
-            Err(_e) => {
-                return Err(UpdateJamError::InvalidDateFormat(format!(
-                    "Date {} not a valid date",
-                    jam_form_data.start_date
-                )))
-            }
-        };
-        jam.end_date = match jam_form_data.end_date.parse::<NaiveDateTime>() {
-            Ok(t) => t,
-            Err(_e) => {
-                return Err(UpdateJamError::InvalidDateFormat(format!(
-                    "Date {} not a valid date",
-                    jam_form_data.end_date
-                )))
-            }
-        };
-        jam.approval_state = match ApprovalState::from_human_str(
-            &jam_form_data.approval_state,
-        ) {
-            Ok(approval_state) => approval_state,
-            Err(_e) => {
-                return Err(UpdateJamError::InvalidApprovalState(format!(
-                    "Supplied approval state {} is invalid",
-                    jam_form_data.approval_state
-                )))
-            }
-        };
+        jam.start_date = jam_form_data.start_date.parse::<NaiveDateTime>()?;
+        jam.end_date = jam_form_data.end_date.parse::<NaiveDateTime>()?;
+        jam.approval_state = ApprovalState::from_human_str(&jam_form_data.approval_state)?;
         rich_text.content = jam_form_data.rich_text_content.clone();
 
-        match jam.update(&conn) {
-            Ok(()) => {}
-            Err(e) => {
-                return Err(UpdateJamError::DatabaseError(format!(
-                    "Could not update database with error {:?}",
-                    e
-                )))
-            }
-        }
-
-        match rich_text.update(&conn) {
-            Ok(()) => {}
-            Err(e) => {
-                return Err(UpdateJamError::DatabaseError(format!(
-                    "Could not update database with error {:?}",
-                    e
-                )))
-            }
-        }
-
+        jam.update(&conn)?;
+        rich_text.update(&conn)?;
         Ok((jam, rich_text))
     });
 

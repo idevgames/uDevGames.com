@@ -71,7 +71,10 @@ pub enum ApprovalState {
     Rejected = 8,
 }
 
+#[derive(Debug, Error)]
 pub enum ApprovalStateParseError {
+
+    #[error("Unrecognized Approval State {0}")]
     UnrecognizedApprovalState(String),
 }
 
