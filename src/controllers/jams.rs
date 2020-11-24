@@ -100,42 +100,6 @@ pub async fn edit_jam(
     Ok(Template::render("edit_jam", &context))
 }
 
-#[derive(Debug, Responder)]
-pub enum UpdateJamError {
-    /// Couldn't get out of the pool. Send a lifeguard.
-    #[response(status = 500)]
-    PoolError(String),
-
-    /// Couldn't use the database. Send a DBA.
-    #[response(status = 500)]
-    DatabaseError(String),
-
-    /// The user requested a jam that does not exist.
-    #[response(status = 404)]
-    NoSuchJam(String),
-
-    /// The Jam is found but references a RichText that doesn't exist.
-    #[response(status = 404)]
-    NoAttachedText(String),
-
-    /// The date format is not ISO-8601.
-    #[response(status = 400)]
-    InvalidDateFormat(String),
-
-    /// The approval state does not match the list.
-    #[response(status = 400)]
-    InvalidApprovalState(String),
-}
-
-impl From<diesel::result::Error> for UpdateJamError {
-    fn from(e: diesel::result::Error) -> Self {
-        return UpdateJamError::DatabaseError(format!(
-            "Could not access the database with error {:?}",
-            e
-        ));
-    }
-}
-
 #[derive(Debug, FromForm)]
 pub struct JamFormData {
     id: i32,
