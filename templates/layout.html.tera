@@ -30,7 +30,7 @@
         {% if suppress_auth_controls | default(value=false) != true %}
           <form class="d-flex">
             {% if auth is defined and auth.user is object %}
-              <a href="/logout" class="btn btn-outline-danger" role="button">
+              <a href="/logout" class="btn btn-outline-danger" role="button" data-method="delete" rel="nofollow">
                 Logout
               </a>
             {% else %}

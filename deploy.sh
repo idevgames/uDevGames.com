@@ -15,6 +15,15 @@ if [ $? -neq 0 ]; then
   return -1
 fi
 
+# if we've already made it so that cargo build generates these files we still
+# want this here to replace them with more optimized versions of the same
+npm build --production
+
+if [ $? -neq 0 ]; then
+  echo "fix your broken brunch build"
+  return -1
+fi
+
 # TODO: set the site into maintenance mode, serving a static page
 
 # stop the live service

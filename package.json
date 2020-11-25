@@ -1,0 +1,26 @@
+{
+  "name": "uDevGames",
+  "description": "JS assets for uDevGames",
+  "private": true,
+  "author": "iDevGames",
+  "version": "0.0.1",
+  "repository": "https://github.com/idevgames/udevgames.com",
+  "scripts": {
+    "start": "brunch watch --server",
+    "build": "brunch build --production"
+  },
+  "dependencies": {
+    "bootstrap": "^5.0.0-alpha3",
+    "jquery": "^3.5.1",
+    "jquery-ujs": "^1.2.2",
+    "sass-brunch": "^3.0.0"
+  },
+  "devDependencies": {
+    "auto-reload-brunch": "^2",
+    "babel-brunch": "~6.0",
+    "babel-preset-latest": "^6",
+    "brunch": "^2",
+    "clean-css-brunch": "^2",
+    "uglify-js-brunch": "^2"
+  }
+}

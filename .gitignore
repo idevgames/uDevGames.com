@@ -1,4 +1,35 @@
-/target
-/db
+target
+db
 .env
 
+# Numerous always-ignore extensions
+*.diff
+*.err
+*.orig
+*.log
+*.rej
+*.swo
+*.swp
+*.vi
+*~
+*.sass-cache
+
+# OS or Editor folders
+.DS_Store
+.cache
+.project
+.settings
+.tmproj
+nbproject
+Thumbs.db
+
+# NPM packages folder.
+node_modules/
+
+# Brunch outputs
+static/app.css
+static/app.css.map
+static/app.js
+static/app.js.map
+static/vendor.js
+static/vendor.js.map

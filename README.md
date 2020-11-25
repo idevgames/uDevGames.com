@@ -5,7 +5,27 @@ community.
 
 ## Developing
 
-To work on this site, you need Rust.
+To work on this site you need Rust, NodeJS, and a Github OAuth application.
+
+### Node
+
+Install NodeJS using a method appropriate to your operating system and
+preferences. Then install Brunch, a JS tool that compiles JS/SASS to things that
+are static and can be used by the browser.
+
+```bash
+npm i -g brunch # this may require sudo, depending on your installation of node
+```
+
+Now install Brunch's dependencies.
+
+```bash
+npm i
+```
+
+That's the NodeJS part done.
+
+### Rust
 
 To build, first make sure your system is configured for openssl-sys crate:
 https://docs.rs/openssl/0.10.29/openssl/.
@@ -22,6 +42,8 @@ uDevGames.com currently uses Rocket's mainline branch to use the unreleased
 0.5.x version. As such the documentation you will find on docs.rs is divergent
 from what you will find here. You can use https://api.rocket.rs/master/rocket/
 to see docs which (mostly) match the reality in the code.
+
+### Github
 
 Managing the OAuth lifecycle with Github was done from these reference docs:
 https://docs.github.com/en/rest/guides/basics-of-authentication.
@@ -49,6 +71,9 @@ Happy hacking!
 
 Unless you know better ones.
 
+- `app` has a some javascript and css, which gets handled by Brunch to create
+  the files that get served to your web browser. You can see Brunch's config at
+  `brunch-config.js`.
 - `src/models` has a bunch of Rust structs that try to abstract over raw Diesel
   SQL calls. In general the business logic of interacting with the database and
   obeying related constraints is here.

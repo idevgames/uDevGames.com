@@ -14,3 +14,8 @@ In no particular order:
   (which will destroy my cookie) and log back in again.
 * For some reason the breadcrumbs make the navbar taller? I'd like to to be
   consistent.
+* running `cargo run` ought to start brunch watching in a separate process so
+  that js and css auto-update without having to re-run commands by hand. note
+  that running brunch on `cargo build` is rather past the mark right now as we
+  simply run `brunch build --production` in `deploy.sh` instead... which isn't
+  fantastic but there's better features to pay into right now.

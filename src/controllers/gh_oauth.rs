@@ -2,7 +2,7 @@ use crate::db::DbPool;
 use crate::models::GhUserRecord;
 use crate::template_helpers::{Breadcrumbs, BreadcrumbsContext};
 use reqwest::Client as ReqwestClient;
-use rocket::{get, http::Cookie, http::CookieJar, State};
+use rocket::{get, delete, http::Cookie, http::CookieJar, State};
 use rocket_contrib::templates::Template;
 use serde::{Deserialize, Serialize};
 
@@ -207,7 +207,7 @@ async fn get_user_detail(
 }
 
 /// Logs the user out. Pitches all the cookies we set.
-#[get("/logout")]
+#[delete("/logout")]
 pub async fn logout(cookies: &CookieJar<'_>) -> Template {
     cookies.remove_private(Cookie::named("gh_user_id"));
 

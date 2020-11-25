@@ -11,4 +11,12 @@
     </p>
   </div>
 </div>
+{{ auth | json_encode(pretty=true)}}
+{% if auth.user is object %}
+  <div class="row">
+    <div class="col">
+      <a href="/jams" data-method="post" rel="nofollow" class="button" role="button">Create Game Jame</a>
+    </div>
+  </div>
+{% endif %}
 {% endblock %}
