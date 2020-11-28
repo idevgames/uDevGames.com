@@ -27,6 +27,11 @@ pub fn not_authorized() -> Template {
   Template::render("error_page", &ErrorContext::new(401, "You must be logged in to view this page."))
 }
 
+#[catch(403)]
+pub fn forbidden() -> Template {
+  Template::render("error_page", &ErrorContext::new(403, "You cannot view this page."))
+}
+
 #[catch(500)]
 pub fn server_error() -> Template {
   Template::render("error_page", &ErrorContext::new(500, "Internal Server Error."))

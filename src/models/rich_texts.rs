@@ -1,6 +1,6 @@
 use crate::{
     db::DbConn,
-    models::{LastInsertRowid, ModelError},
+    models::{last_insert_rowid, ModelError},
 };
 use diesel::result::Error as DieselError;
 use pulldown_cmark::{html, Options, Parser};
@@ -25,7 +25,7 @@ impl RichText {
                 .execute(conn)?;
 
             let last_row_id =
-                diesel::select(LastInsertRowid).get_result::<i32>(conn)?;
+                diesel::select(last_insert_rowid).get_result::<i32>(conn)?;
 
             rich_texts
                 .filter(id.eq(last_row_id))

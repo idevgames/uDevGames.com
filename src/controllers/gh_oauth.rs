@@ -2,7 +2,7 @@ use crate::db::DbPool;
 use crate::models::GhUserRecord;
 use crate::template_helpers::{Breadcrumbs, BreadcrumbsContext};
 use reqwest::Client as ReqwestClient;
-use rocket::{get, delete, http::Cookie, http::CookieJar, State};
+use rocket::{response::Redirect, State, delete, get, http::Cookie, http::CookieJar};
 use rocket_contrib::templates::Template;
 use serde::{Deserialize, Serialize};
 
@@ -65,25 +65,14 @@ pub async fn gh_callback(
     db_pool: State<'_, DbPool>,
     cookies: &CookieJar<'_>,
     code: String,
-) -> Result<Template, super::HandlerError> {
+) -> Result<Redirect, super::HandlerError> {
     let user_record = 
       auth_with_github(&gh_client, &db_pool, &gh_credentials, &code).await?;
     let cookie = Cookie::new("gh_user_id", user_record.id.to_string());
 
     cookies.add_private(cookie);
 
-    #[derive(Serialize)]
-    struct Context {
-        suppress_auth_controls: bool,
-        breadcrumbs: BreadcrumbsContext,
-    };
-
-    let context = Context {
-        suppress_auth_controls: true,
-        breadcrumbs: Breadcrumbs::from_crumbs(vec![]).to_context(),
-    };
-
-    Ok(Template::render("gh_callback", &context))
+    Ok(Redirect::to("/"))
 }
 
 /// The response we get back from Github with our access token, which allows us

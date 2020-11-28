@@ -8,6 +8,11 @@
       showing up on haveibeenpwned, please log in with one of the following
       OAuth providers to establish an identity on this site.
     </p>
+    <p>
+      Logging in will create a Session Cookie with your unique user id in it. If
+      you do not want to accept this cookie, please do not log in. You can
+      destroy this cookie at any time by logging out.
+    </p>
   </div>
   <div class="col-sm-2"></div>
 </div>

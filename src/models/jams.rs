@@ -1,5 +1,5 @@
 use crate::db::DbConn;
-use crate::models::{ApprovalState, LastInsertRowid, ModelError, RichText};
+use crate::models::{ApprovalState, last_insert_rowid, ModelError, RichText};
 use chrono::NaiveDateTime;
 
 use super::r_to_opt;
@@ -41,8 +41,10 @@ impl Jam {
                     approval_state.eq(ApprovalState::Draft),
                 ))
                 .execute(conn)?;
+
             let rowid =
-                diesel::select(LastInsertRowid).get_result::<i32>(conn)?;
+                diesel::select(last_insert_rowid).get_result::<i32>(conn)?;
+
             Ok(jams.filter(id.eq(rowid)).limit(1).first::<Jam>(conn)?)
         })?;
 

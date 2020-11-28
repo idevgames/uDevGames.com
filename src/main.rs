@@ -183,7 +183,9 @@ impl TryFrom<String> for UserIdentity {
     /// @login or by numeric id.
     fn try_from(s: String) -> Result<Self, Self::Error> {
         match s.starts_with('@') {
-            true => Ok(UserIdentity::Login(s)),
+            true => Ok(
+                UserIdentity::Login(s.strip_prefix("@").unwrap().to_string())
+            ),
             false => Ok(UserIdentity::Id(s.parse()?)),
         }
     }

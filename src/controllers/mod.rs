@@ -44,7 +44,7 @@ pub enum HandlerError {
 
 impl<'r, 'o: 'r> Responder<'r, 'o> for HandlerError {
     fn respond_to(self, _request: &'r Request<'_>) -> RocketResult<'o> {
-        Err(match self {
+        let r = match self {
             HandlerError::AttachmentStorageError(_) => Status::InternalServerError,
             HandlerError::DatabaseError(_) => Status::InternalServerError,
             HandlerError::PoolError(_) => Status::InternalServerError,
@@ -53,6 +53,12 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for HandlerError {
             HandlerError::ApprovalStateParseError(_) => Status::InternalServerError,
             HandlerError::DieselError(_) => Status::InternalServerError,
             HandlerError::NotFound => Status::NotFound,
-        })
+        };
+
+        if r == Status::InternalServerError {
+            print!("Internal error {:?}", self);
+        }
+
+        Err(r)
     }
 }

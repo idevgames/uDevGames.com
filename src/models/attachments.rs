@@ -1,7 +1,7 @@
 use crate::{
     attachments::AttachmentStorage,
     db::DbConn,
-    models::{r_to_opt, LastInsertRowid, ModelError},
+    models::{r_to_opt, last_insert_rowid, ModelError},
 };
 use diesel::result::Error as DieselError;
 use std::path::PathBuf;
@@ -57,7 +57,7 @@ impl Attachment {
                         md5.eq(vec![]) // how to insert binary data?
                     ))
                     .execute(conn)?;
-                let rowid = diesel::select(LastInsertRowid)
+                let rowid = diesel::select(last_insert_rowid)
                     .get_result::<i32>(conn)?;
                 Ok(
                     attachments

@@ -11,8 +11,7 @@
     </p>
   </div>
 </div>
-{{ auth | json_encode(pretty=true)}}
-{% if auth.user is object %}
+{% if auth.user is object and "admin" in auth.user.permissions %}
   <div class="row">
     <div class="col">
       <a href="/jams" data-method="post" rel="nofollow" class="button" role="button">Create Game Jame</a>

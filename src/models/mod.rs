@@ -43,7 +43,7 @@ pub enum ModelError {
 // Gets the most recently inserted row. Please only use this from within a
 // transaction to avoid threading adventures.
 no_arg_sql_function!(
-    LastInsertRowid,
+    last_insert_rowid,
     diesel::sql_types::Integer,
     "Represents the SQL last_insert_row() function"
 );

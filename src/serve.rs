@@ -50,6 +50,7 @@ pub async fn serve(
         .register(catchers![
           crate::error_handlers::not_found,
           crate::error_handlers::not_authorized,
+          crate::error_handlers::forbidden,
           crate::error_handlers::server_error,
         ])
         .launch()

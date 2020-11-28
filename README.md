@@ -65,6 +65,21 @@ it with the program arguments you desire, such as `./wsl.sh serve` or
 Finally, you'll need to configure the application. See `dotenv`, copying that
 locally to a `.env` file and filling it in per the instruction in the file.
 
+### Permissions
+
+To try different permissions, first log in to your app locally. Then run the
+following:
+
+```
+cargo run permission grant -u @your_github_user_name -p admin
+```
+
+To undo that, use the revoke command.
+
+```
+cargo run permission revoke -u @your_github_user_name -p admin
+```
+
 Happy hacking!
 
 ## Project structure
