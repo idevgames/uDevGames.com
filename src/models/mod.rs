@@ -33,6 +33,10 @@ pub enum ModelError {
     #[error("Couldn't query the database with error {0}. Send a DBA.")]
     DieselError(#[from] DieselError),
 
+    /// The entity was not found in the database.
+    #[error("The entity was not found.")]
+    NotFound,
+
     #[error("The file {0} could not be found. Send in Search and Rescue")]
     FileNotFoundError(PathBuf),
 
@@ -73,7 +77,6 @@ pub enum ApprovalState {
 
 #[derive(Debug, Error)]
 pub enum ApprovalStateParseError {
-
     #[error("Unrecognized Approval State {0}")]
     UnrecognizedApprovalState(String),
 }

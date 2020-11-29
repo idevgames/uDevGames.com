@@ -4,7 +4,10 @@ pub mod homepage;
 pub mod jam_entries;
 pub mod jams;
 
-use rocket::{Request, response::Responder, response::Result as RocketResult, http::Status};
+use rocket::{
+    http::Status, response::Responder, response::Result as RocketResult,
+    Request,
+};
 use thiserror::Error;
 
 /// Unified error type for most (all?) handlers. Puts all the annoying
@@ -45,12 +48,16 @@ pub enum HandlerError {
 impl<'r, 'o: 'r> Responder<'r, 'o> for HandlerError {
     fn respond_to(self, _request: &'r Request<'_>) -> RocketResult<'o> {
         let r = match self {
-            HandlerError::AttachmentStorageError(_) => Status::InternalServerError,
+            HandlerError::AttachmentStorageError(_) => {
+                Status::InternalServerError
+            }
             HandlerError::DatabaseError(_) => Status::InternalServerError,
             HandlerError::PoolError(_) => Status::InternalServerError,
             HandlerError::HttpError(_) => Status::InternalServerError,
             HandlerError::ParseError(_) => Status::InternalServerError,
-            HandlerError::ApprovalStateParseError(_) => Status::InternalServerError,
+            HandlerError::ApprovalStateParseError(_) => {
+                Status::InternalServerError
+            }
             HandlerError::DieselError(_) => Status::InternalServerError,
             HandlerError::NotFound => Status::NotFound,
         };

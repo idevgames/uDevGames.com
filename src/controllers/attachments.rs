@@ -1,8 +1,4 @@
-use crate::{
-    attachments::AttachmentStorage,
-    db::DbPool,
-    models::Attachment,
-};
+use crate::{attachments::AttachmentStorage, db::DbPool, models::Attachment};
 use rocket::{get, response::Stream, tokio::fs::File, State};
 
 // match stuff like udevgames.com/attachments/1/my_file.jpeg

@@ -6,10 +6,10 @@ extern crate diesel;
 extern crate diesel_migrations;
 
 mod attachments;
-mod error_handlers;
 mod cliopts;
 mod controllers;
 mod db;
+mod error_handlers;
 mod migrate;
 mod models;
 mod schema;
@@ -183,9 +183,9 @@ impl TryFrom<String> for UserIdentity {
     /// @login or by numeric id.
     fn try_from(s: String) -> Result<Self, Self::Error> {
         match s.starts_with('@') {
-            true => Ok(
-                UserIdentity::Login(s.strip_prefix("@").unwrap().to_string())
-            ),
+            true => Ok(UserIdentity::Login(
+                s.strip_prefix("@").unwrap().to_string(),
+            )),
             false => Ok(UserIdentity::Id(s.parse()?)),
         }
     }

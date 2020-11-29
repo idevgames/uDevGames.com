@@ -1,7 +1,7 @@
 use crate::{
     attachments::AttachmentStorage,
     db::DbConn,
-    models::{r_to_opt, last_insert_rowid, ModelError},
+    models::{last_insert_rowid, r_to_opt, ModelError},
 };
 use diesel::result::Error as DieselError;
 use std::path::PathBuf;
@@ -109,5 +109,9 @@ impl Attachment {
             .first::<Attachment>(conn);
 
         r_to_opt(attachment)
+    }
+
+    pub fn url(&self) -> String {
+        format!("/attachments/{}/{}", self.id, self.name)
     }
 }

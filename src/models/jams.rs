@@ -1,11 +1,11 @@
 use crate::db::DbConn;
-use crate::models::{ApprovalState, last_insert_rowid, ModelError, RichText};
+use crate::models::{last_insert_rowid, ApprovalState, ModelError, RichText};
 use chrono::NaiveDateTime;
 
 use super::r_to_opt;
 
 /// Models a game jam.
-#[derive(Queryable)]
+#[derive(Debug, Queryable)]
 pub struct Jam {
     pub id: i32,
     pub title: String,
@@ -62,6 +62,37 @@ impl Jam {
         let jam = jams.filter(id.eq(jam_id)).limit(1).first::<Jam>(conn);
 
         r_to_opt(jam)
+    }
+
+    /// Finds all Jams, paging them.
+    ///
+    /// * `approved_only` when `true` returns only [`crate::models::jams::Jam`]s
+    ///   which have the the `approval_state`
+    ///   [`crate::models::ApprovalState::Approved`].
+    /// * `page` is the page in the results to retrieve.
+    /// * `page_size` is the length of each page.
+    pub fn find_all(
+        conn: &DbConn,
+        approved_only: bool,
+        page: i64,
+        page_size: i64,
+    ) -> Result<Vec<Jam>, ModelError> {
+        use crate::schema::jams::dsl::*;
+        use diesel::prelude::*;
+
+        let q = jams
+            .order(start_date.desc())
+            .limit(page_size)
+            .offset(page * page_size);
+
+        let r = if approved_only {
+            q.filter(approval_state.eq(ApprovalState::Approved))
+                .load::<Jam>(conn)?
+        } else {
+            q.load::<Jam>(conn)?
+        };
+
+        Ok(r)
     }
 
     /// Updates a Jam by making what's in the database look like what's on the

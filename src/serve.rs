@@ -1,8 +1,10 @@
 use crate::{
     attachments::AttachmentStorage, controllers::gh_oauth::GhCredentials,
-    db::DbPool
+    db::DbPool,
 };
-use rocket::{config::Config as RocketConfig, figment::Figment, routes, catchers};
+use rocket::{
+    catchers, config::Config as RocketConfig, figment::Figment, routes,
+};
 use rocket_contrib::{
     //    compression::Compression,
     helmet::SpaceHelmet,
@@ -48,10 +50,10 @@ pub async fn serve(
         )
         .mount("/static", StaticFiles::from(crate_relative!("/static")))
         .register(catchers![
-          crate::error_handlers::not_found,
-          crate::error_handlers::not_authorized,
-          crate::error_handlers::forbidden,
-          crate::error_handlers::server_error,
+            crate::error_handlers::not_found,
+            crate::error_handlers::not_authorized,
+            crate::error_handlers::forbidden,
+            crate::error_handlers::server_error,
         ])
         .launch()
         .await;

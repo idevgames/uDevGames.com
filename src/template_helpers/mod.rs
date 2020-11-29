@@ -1,5 +1,7 @@
 mod admin_only;
+mod attachment_context;
 mod breadcrumbs;
+mod jam_context;
 mod user_optional;
 
 use std::num::ParseIntError;

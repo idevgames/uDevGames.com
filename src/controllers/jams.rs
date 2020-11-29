@@ -125,28 +125,32 @@ pub async fn update_jam(
 
     // do operations in a transaction so that all the updates roll back on
     // failure
-    let txr = conn.transaction::<(Jam, RichText), super::HandlerError, _>(|| {
-        let mut jam = match Jam::find_by_id(&conn, jam_id)? {
-            Some(jam) => jam,
-            None => return Err(super::HandlerError::NotFound),
-        };
-        let mut rich_text = match RichText::find_by_id(&conn, jam.rich_text_id)? {
-            Some(rich_text) => rich_text,
-            None => return Err(super::HandlerError::NotFound),
-        };
+    let txr =
+        conn.transaction::<(Jam, RichText), super::HandlerError, _>(|| {
+            let mut jam = match Jam::find_by_id(&conn, jam_id)? {
+                Some(jam) => jam,
+                None => return Err(super::HandlerError::NotFound),
+            };
+            let mut rich_text =
+                match RichText::find_by_id(&conn, jam.rich_text_id)? {
+                    Some(rich_text) => rich_text,
+                    None => return Err(super::HandlerError::NotFound),
+                };
 
-        jam.title = jam_form_data.title.clone();
-        jam.slug = jam_form_data.slug.clone();
-        jam.summary = jam_form_data.summary.clone();
-        jam.start_date = jam_form_data.start_date.parse::<NaiveDateTime>()?;
-        jam.end_date = jam_form_data.end_date.parse::<NaiveDateTime>()?;
-        jam.approval_state = ApprovalState::from_human_str(&jam_form_data.approval_state)?;
-        rich_text.content = jam_form_data.rich_text_content.clone();
+            jam.title = jam_form_data.title.clone();
+            jam.slug = jam_form_data.slug.clone();
+            jam.summary = jam_form_data.summary.clone();
+            jam.start_date =
+                jam_form_data.start_date.parse::<NaiveDateTime>()?;
+            jam.end_date = jam_form_data.end_date.parse::<NaiveDateTime>()?;
+            jam.approval_state =
+                ApprovalState::from_human_str(&jam_form_data.approval_state)?;
+            rich_text.content = jam_form_data.rich_text_content.clone();
 
-        jam.update(&conn)?;
-        rich_text.update(&conn)?;
-        Ok((jam, rich_text))
-    });
+            jam.update(&conn)?;
+            rich_text.update(&conn)?;
+            Ok((jam, rich_text))
+        });
 
     let (jam, rich_text) = match txr {
         Ok((jam, rich_text)) => (jam, rich_text),

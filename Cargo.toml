@@ -13,6 +13,7 @@ clap = "3.0.0-beta.2"
 diesel = { version = "1.4.5", features = [ "chrono", "sqlite", "r2d2" ] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
+hex = "0.4.2"
 md5 = "0.7.0"
 pulldown-cmark = "0.8.0"
 serde = { version = "1.0.117", features = [ "derive" ] }
@@ -34,5 +35,4 @@ default-features = false
 features = [ "compression", "helmet", "serve", "tera_templates" ]
 
 [dev-dependencies]
-hex = "0.4.2"
 tempfile = "3.1.0"

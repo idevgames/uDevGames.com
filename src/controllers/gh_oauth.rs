@@ -2,7 +2,9 @@ use crate::db::DbPool;
 use crate::models::GhUserRecord;
 use crate::template_helpers::{Breadcrumbs, BreadcrumbsContext};
 use reqwest::Client as ReqwestClient;
-use rocket::{response::Redirect, State, delete, get, http::Cookie, http::CookieJar};
+use rocket::{
+    delete, get, http::Cookie, http::CookieJar, response::Redirect, State,
+};
 use rocket_contrib::templates::Template;
 use serde::{Deserialize, Serialize};
 
@@ -66,8 +68,8 @@ pub async fn gh_callback(
     cookies: &CookieJar<'_>,
     code: String,
 ) -> Result<Redirect, super::HandlerError> {
-    let user_record = 
-      auth_with_github(&gh_client, &db_pool, &gh_credentials, &code).await?;
+    let user_record =
+        auth_with_github(&gh_client, &db_pool, &gh_credentials, &code).await?;
     let cookie = Cookie::new("gh_user_id", user_record.id.to_string());
 
     cookies.add_private(cookie);
