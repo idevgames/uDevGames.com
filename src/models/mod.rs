@@ -33,7 +33,8 @@ pub enum ModelError {
     #[error("Couldn't query the database with error {0}. Send a DBA.")]
     DieselError(#[from] DieselError),
 
-    /// The entity was not found in the database.
+    /// The entity was not found in the database. This indicates that the lack
+    /// of an associated record signifies a schema violation.
     #[error("The entity was not found.")]
     NotFound,
 
@@ -83,11 +84,11 @@ pub enum ApprovalStateParseError {
 
 impl ApprovalState {
     pub fn from_human_str(s: &str) -> Result<Self, ApprovalStateParseError> {
-        Ok(match s {
-            "Draft" => ApprovalState::Draft,
-            "Submitted" => ApprovalState::Submitted,
-            "Approved" => ApprovalState::Approved,
-            "Rejected" => ApprovalState::Rejected,
+        Ok(match s.to_lowercase().as_str() {
+            "draft" => ApprovalState::Draft,
+            "submitted" => ApprovalState::Submitted,
+            "approved" => ApprovalState::Approved,
+            "rejected" => ApprovalState::Rejected,
             _ => {
                 return Err(ApprovalStateParseError::UnrecognizedApprovalState(
                     s.to_string(),

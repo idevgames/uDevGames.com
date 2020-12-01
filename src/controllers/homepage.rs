@@ -1,4 +1,4 @@
-use crate::template_helpers::{UserOptional, UserOptionalContext};
+use crate::template_helpers::{UserOptional, JamContext, UserOptionalContext};
 use crate::{db::DbPool, models::Jam};
 use rocket::{get, State};
 use rocket_contrib::templates::Template;
@@ -10,13 +10,16 @@ pub fn homepage(
     user: UserOptional,
 ) -> Result<Template, super::HandlerError> {
     let conn = pool.get()?;
-    // load the firs three approved jams
-    let jams = Jam::find_all(&conn, true, 0, 3)?;
+    // load the first three approved jams
+    let mut jams = Vec::new();
+    for j in Jam::find_all(&conn, true, 0, 3)? {
+        jams.push(JamContext::from_model(&conn, &j, false)?);
+    }
 
     #[derive(Debug, Serialize)]
     struct Context {
         auth: UserOptionalContext,
-        jams: Vec<Jam>,
+        jams: Vec<JamContext>,
     }
 
     let context = Context {

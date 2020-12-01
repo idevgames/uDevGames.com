@@ -15,13 +15,14 @@ pub struct AttachmentContext {
 }
 
 impl AttachmentContext {
+    /// Constructs a new context from a model.
     pub fn from_model(attachment: &Attachment) -> Self {
         AttachmentContext {
             id: attachment.id,
             name: attachment.name.clone(),
-            published: attachment.published,
-            mime_type: attachment.mime_type,
-            md5: hex_encode(attachment.md5),
+            published: attachment.published.clone(),
+            mime_type: attachment.mime_type.clone(),
+            md5: hex_encode(&attachment.md5),
             url: attachment.url(),
         }
     }

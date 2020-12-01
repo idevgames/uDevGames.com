@@ -10,7 +10,8 @@ use rocket::Request;
 use serde::Serialize;
 
 pub use crate::template_helpers::{
-    admin_only::*, breadcrumbs::*, user_optional::*,
+    admin_only::*, breadcrumbs::*, attachment_context::*, jam_context::*,
+    user_optional::*,
 };
 use crate::{
     db::DbPool,
