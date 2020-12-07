@@ -3,12 +3,12 @@ use diesel::Connection;
 use rocket::{get, post, uri, State};
 use rocket::{
     request::{Form, FromForm},
-    response::{Redirect, Responder},
+    response::Redirect,
 };
 use rocket_contrib::templates::Template;
 use serde::Serialize;
 
-use crate::{db::DbPool, models::ApprovalState, template_helpers::AdminOnly};
+use crate::{db::DbPool, models::ApprovalState, template_helpers::{AdminOnly, JamContext}};
 use crate::{
     models::{Jam, RichText},
     template_helpers::AdminOnlyContext,
@@ -37,26 +37,6 @@ pub async fn create_jam(
     Ok(Redirect::to(uri!(edit_jam: jam.id)))
 }
 
-// this provides a barrier between the data model and what's rendered out to
-// html, so we won't accidentally leak private data should it be added. it
-// also makes it serializable so it can actually go into a template context.
-// in addition to these three important functions, it flattens the RichText
-// onto the base Jam model, which is more logical for the domain of template
-// rendering.
-#[derive(Debug, Serialize)]
-struct JamContext {
-    id: i32,
-    title: String,
-    slug: String,
-    summary: String,
-    summary_attachment_id: Option<i32>,
-    rich_text_id: i32,
-    rich_text_content: String,
-    start_date: String,
-    end_date: String,
-    approval_state: String,
-}
-
 #[derive(Debug, Serialize)]
 struct EditJamContext {
     auth: AdminOnlyContext,
@@ -83,18 +63,7 @@ pub async fn edit_jam(
 
     let context = EditJamContext {
         auth: admin_only.to_context(),
-        jam: JamContext {
-            id: jam.id,
-            title: jam.title.clone(),
-            slug: jam.slug.clone(),
-            summary: jam.summary.clone(),
-            summary_attachment_id: jam.summary_attachment_id,
-            rich_text_id: jam.rich_text_id,
-            rich_text_content: rich_text.content.clone(),
-            start_date: format!("{}", jam.start_date),
-            end_date: format!("{}", jam.end_date),
-            approval_state: jam.approval_state.to_human_str(),
-        },
+        jam: JamContext::from_model(&conn, &jam, false)?,
     };
 
     Ok(Template::render("edit_jam", &context))
@@ -150,27 +119,11 @@ pub async fn update_jam(
             jam.update(&conn)?;
             rich_text.update(&conn)?;
             Ok((jam, rich_text))
-        });
-
-    let (jam, rich_text) = match txr {
-        Ok((jam, rich_text)) => (jam, rich_text),
-        Err(e) => return Err(e),
-    };
+        })?;
 
     let context = EditJamContext {
         auth: admin_only.to_context(),
-        jam: JamContext {
-            id: jam.id,
-            title: jam.title.clone(),
-            slug: jam.slug.clone(),
-            summary: jam.summary.clone(),
-            summary_attachment_id: jam.summary_attachment_id,
-            rich_text_id: jam.rich_text_id,
-            rich_text_content: rich_text.content.clone(),
-            start_date: format!("{}", jam.start_date),
-            end_date: format!("{}", jam.end_date),
-            approval_state: jam.approval_state.to_human_str(),
-        },
+        jam: JamContext::from_model(&conn, &txr.0, false)?,
     };
 
     Ok(Template::render("edit_jam", &context))
