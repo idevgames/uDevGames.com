@@ -1,5 +1,7 @@
 use crate::db::DbConn;
-use crate::models::{last_insert_rowid, ApprovalState, Attachment, ModelError, RichText};
+use crate::models::{
+    last_insert_rowid, ApprovalState, Attachment, ModelError, RichText,
+};
 use chrono::NaiveDateTime;
 
 use super::r_to_opt;
@@ -121,19 +123,24 @@ impl Jam {
     }
 
     /// Loads the summary attachment, if present.
-    pub fn load_attachment(&self, conn: &DbConn) -> Result<Option<Attachment>, ModelError> {
+    pub fn load_attachment(
+        &self,
+        conn: &DbConn,
+    ) -> Result<Option<Attachment>, ModelError> {
         match self.summary_attachment_id {
-            Some(id) => {
-                Ok(Attachment::find_by_id(conn, id)?)
-            }
-            None => Ok(None)
+            Some(id) => Ok(Attachment::find_by_id(conn, id)?),
+            None => Ok(None),
         }
     }
 
     /// Loads the rich text summary of this Jam. Since every Jam has a rich text
     /// summary, the absence of this is a schema violation and is returned as an
     /// [`crate::models::ModelError::NotFound`].
-    pub fn load_rich_text(&self, conn: &DbConn) -> Result<RichText, ModelError> {
-        RichText::find_by_id(conn, self.rich_text_id)?.ok_or(ModelError::NotFound)
+    pub fn load_rich_text(
+        &self,
+        conn: &DbConn,
+    ) -> Result<RichText, ModelError> {
+        RichText::find_by_id(conn, self.rich_text_id)?
+            .ok_or(ModelError::NotFound)
     }
 }

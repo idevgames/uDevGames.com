@@ -24,7 +24,8 @@ impl JamContext {
     /// can be omitted if not used in the page.
     pub fn from_model(
         conn: &DbConn,
-        jam: &Jam, render_markdown: bool
+        jam: &Jam,
+        render_markdown: bool,
     ) -> Result<Self, ModelError> {
         let attachment = jam.load_attachment(conn)?;
         let rich_text = jam.load_rich_text(conn)?;
@@ -39,7 +40,8 @@ impl JamContext {
             title: jam.title.clone(),
             slug: jam.slug.clone(),
             summary: jam.summary.clone(),
-            summary_attachment: attachment.map(|a| AttachmentContext::from_model(&a)),
+            summary_attachment: attachment
+                .map(|a| AttachmentContext::from_model(&a)),
             rich_text_content: rich_text.content.clone(),
             rendered_rich_text_content: rendered_rich_text_content,
             start_date: jam.start_date.to_string(),

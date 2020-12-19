@@ -1,6 +1,7 @@
 target
 db
 .env
+attachments
 
 # Numerous always-ignore extensions
 *.diff

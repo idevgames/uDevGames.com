@@ -30,6 +30,14 @@ pub struct UserOptionalContext {
 }
 
 impl UserOptional {
+    pub fn is_banned(&self) -> bool {
+        self.permissions.contains(&"banned".to_string())
+    }
+
+    pub fn is_admin(&self) -> bool {
+        self.permissions.contains(&"admin".to_string())
+    }
+
     /// Produces a serializable context that can be passed to a template.
     pub fn to_context(&self) -> UserOptionalContext {
         return UserOptionalContext {

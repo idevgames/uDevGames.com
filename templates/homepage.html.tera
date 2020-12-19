@@ -1,20 +1,34 @@
 {% extends "layout" %}
 {% block content %}
+
+{% for jam in jams -%}
+  <!-- jam {{ jam.id }} -->
+  <div class="row">
+    <div class="col">
+      <h2 class="jam-list-title">{{ jam.title }}</h2>
+    </div>
+  </div>
+{%- endfor %}
+
 <div class="row">
   <div class="col">
-    <p>
-      {% if auth.user is object %}
-        Hello, {{ auth.user.login }}. You can <a href="/logout">logout</a> now.
-      {% else %}
-        Hello unknown user, would you like to <a href="/login">login</a>?
-      {% endif %}
-    </p>
   </div>
 </div>
 {% if auth.user is object and "admin" in auth.user.permissions %}
   <div class="row">
     <div class="col">
-      <a href="/jams" data-method="post" rel="nofollow" class="button" role="button">Create Game Jame</a>
+      {% if showing_all_jams == true %}
+        <a href="/" class="btn btn-outline-secondary" role="button" title="Shows all jams, including unpublished ones.">
+          Hide Unpublished
+        </a>
+      {% else %}
+        <a href="/?show_all_jams=true" class="btn btn-outline-secondary" role="button" title="Shows all jams, including unpublished ones.">
+          Show Unpublished
+        </a>
+      {% endif %}
+      <a href="/jams" data-method="post" rel="nofollow" class="btn btn-outline-secondary" role="button">
+        Create Game Jam
+      </a>
     </div>
   </div>
 {% endif %}

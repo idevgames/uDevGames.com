@@ -7,9 +7,16 @@
 
 set -x
 
+brunch build
+
+if [ $? -ne 0 ]; then
+  echo "Fix your broken build, man."
+  return -1
+fi
+
 cargo build
 
-if [ $? -neq 0 ]; then
+if [ $? -ne 0 ]; then
   echo "Fix your broken build, man."
   return -1
 fi

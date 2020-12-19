@@ -8,7 +8,11 @@ use rocket::{
 use rocket_contrib::templates::Template;
 use serde::Serialize;
 
-use crate::{db::DbPool, models::ApprovalState, template_helpers::{AdminOnly, JamContext}};
+use crate::{
+    db::DbPool,
+    models::ApprovalState,
+    template_helpers::{AdminOnly, JamContext},
+};
 use crate::{
     models::{Jam, RichText},
     template_helpers::AdminOnlyContext,

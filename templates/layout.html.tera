@@ -1,7 +1,7 @@
 {% extends "skeleton" %}
 {% block skeleton_content %}
   <header class="container">
-    <div id="idg-img"></div>
+    <div id="idg-img" onclick="window.location = '/'"></div>
   </header>
   <div class="container">
     <nav class="
@@ -30,7 +30,9 @@
         {% if suppress_auth_controls | default(value=false) != true %}
           <form class="d-flex">
             {% if auth is defined and auth.user is object %}
-              <a href="/logout" class="btn btn-outline-danger" role="button" data-method="delete" rel="nofollow">
+              <a href="/logout" class="btn btn-outline-danger" role="button"
+                data-method="delete" rel="nofollow"
+              >
                 Logout
               </a>
             {% else %}
@@ -56,13 +58,17 @@
       <div class="col-md-3"></div>
       <div class="col-md-6">
         <p>
-          &copy; 1998 - {{ now() | date(format='%Y') }} iDevGames. All rights
-          reserved. &bull;
-          This site uses cookies only when you log in. If you do not accept a
-          cookie, don't log in. &bull;
-          Found a bug? Please report it either on
+          &copy; 1998 - {{ now() | date(format='%Y') }}
+          <a href="https://www.idevgames.com/">iDevGames</a>. All rights
+          reserved. &bull; This site uses cookies only when you log in to track
+          that you are logged in; we don't use any analytics or other tracking.
+          If you do not accept this cookie, don't log in. &bull; Found a bug?
+          Please report it either on
           <a href="https://discord.gg/r6fxVBH">Discord</a> or on
           <a href="https://github.com/idevgames/udevgames.com">Github</a>.
+          Please responsibly disclose security issues directly to
+          <abbr title="Necrothitude#0292">@mysteriouspants</abbr> over Discord
+          Private Messaging.
         </p>
       </div>
       <div class="col-md-3"></div>
