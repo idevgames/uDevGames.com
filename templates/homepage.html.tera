@@ -4,9 +4,17 @@
 {% for jam in jams -%}
   <!-- jam {{ jam.id }} -->
   <div class="row">
-    <div class="col">
+    <div class="col-auto me-auto">
       <h2 class="jam-list-title">{{ jam.title }}</h2>
     </div>
+    {% if auth.user is object and "admin" in auth.user.permissions %}
+      <div class="col-auto">
+        <a href="/jams/{{ jam.id }}/edit" class="btn btn-outline-secondary"
+            role="button" title="Edit this jam">
+          Edit
+        </a>
+      </div>
+    {% endif %}
   </div>
 {%- endfor %}
 
@@ -18,15 +26,18 @@
   <div class="row">
     <div class="col">
       {% if showing_all_jams == true %}
-        <a href="/" class="btn btn-outline-secondary" role="button" title="Shows all jams, including unpublished ones.">
+        <a href="/" class="btn btn-outline-secondary" role="button"
+            title="Shows all jams, including unpublished ones.">
           Hide Unpublished
         </a>
       {% else %}
-        <a href="/?show_all_jams=true" class="btn btn-outline-secondary" role="button" title="Shows all jams, including unpublished ones.">
+        <a href="/?show_all_jams=true" class="btn btn-outline-secondary"
+            role="button" title="Shows all jams, including unpublished ones.">
           Show Unpublished
         </a>
       {% endif %}
-      <a href="/jams" data-method="post" rel="nofollow" class="btn btn-outline-secondary" role="button">
+      <a href="/jams" data-method="post" rel="nofollow"
+          class="btn btn-outline-secondary" role="button">
         Create Game Jam
       </a>
     </div>
