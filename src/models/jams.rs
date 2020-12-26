@@ -106,11 +106,8 @@ impl Jam {
             summary, summary_attachment_id, title,
         };
         use diesel::prelude::*;
-        use diesel::debug_query;
 
-        println!("what am i? {:?}", self);
-
-        let q = diesel::update(jams.find(self.id))
+        diesel::update(jams.find(self.id))
             .set((
                 title.eq(&self.title),
                 slug.eq(&self.slug),
@@ -120,11 +117,7 @@ impl Jam {
                 start_date.eq(self.start_date),
                 end_date.eq(self.end_date),
                 approval_state.eq(self.approval_state),
-            ));
-
-        println!("query: {}", debug_query(&q).to_string());
-
-        q
+            ))
             .execute(conn)?;
 
         Ok(())

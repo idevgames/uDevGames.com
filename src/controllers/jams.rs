@@ -110,8 +110,6 @@ pub async fn update_jam(
                     None => return Err(super::HandlerError::NotFound),
                 };
 
-            println!("Form data: {:?}", jam_form_data);
-
             jam.title = jam_form_data.title.clone();
             jam.slug = jam_form_data.slug.clone();
             jam.summary = jam_form_data.summary.clone();
@@ -146,7 +144,7 @@ mod tests {
     use super::parse_date;
 
     #[test]
-    fn date_parsing_madness() {
+    fn date_parsing() {
         let foo = parse_date("2021-01-01");
         assert!(foo.is_ok());
     }
