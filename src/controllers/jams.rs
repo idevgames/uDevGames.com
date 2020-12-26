@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, ParseError as DTParseError};
 use diesel::Connection;
 use rocket::{get, post, uri, State};
 use rocket::{
@@ -75,7 +75,7 @@ pub async fn edit_jam(
 
 #[derive(Debug, FromForm)]
 pub struct JamFormData {
-    id: i32,
+    // id: i32,
     title: String,
     slug: String,
     summary: String,
@@ -110,12 +110,13 @@ pub async fn update_jam(
                     None => return Err(super::HandlerError::NotFound),
                 };
 
+            println!("Form data: {:?}", jam_form_data);
+
             jam.title = jam_form_data.title.clone();
             jam.slug = jam_form_data.slug.clone();
             jam.summary = jam_form_data.summary.clone();
-            jam.start_date =
-                jam_form_data.start_date.parse::<NaiveDateTime>()?;
-            jam.end_date = jam_form_data.end_date.parse::<NaiveDateTime>()?;
+            jam.start_date = parse_date(&jam_form_data.start_date)?;
+            jam.end_date = parse_date(&jam_form_data.end_date)?;
             jam.approval_state =
                 ApprovalState::from_human_str(&jam_form_data.approval_state)?;
             rich_text.content = jam_form_data.rich_text_content.clone();
@@ -131,4 +132,22 @@ pub async fn update_jam(
     };
 
     Ok(Template::render("edit_jam", &context))
+}
+
+fn parse_date(date: &str) -> Result<NaiveDateTime, DTParseError> {
+    NaiveDateTime::parse_from_str(
+        &format!("{} 00:00:00", date),
+        "%Y-%m-%d %H:%M:%S"
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_date;
+
+    #[test]
+    fn date_parsing_madness() {
+        let foo = parse_date("2021-01-01");
+        assert!(foo.is_ok());
+    }
 }

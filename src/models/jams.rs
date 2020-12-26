@@ -3,6 +3,7 @@ use crate::models::{
     last_insert_rowid, ApprovalState, Attachment, ModelError, RichText,
 };
 use chrono::NaiveDateTime;
+use diesel::debug_query;
 
 use super::r_to_opt;
 
@@ -105,8 +106,11 @@ impl Jam {
             summary, summary_attachment_id, title,
         };
         use diesel::prelude::*;
+        use diesel::debug_query;
 
-        diesel::update(jams.find(self.id))
+        println!("what am i? {:?}", self);
+
+        let q = diesel::update(jams.find(self.id))
             .set((
                 title.eq(&self.title),
                 slug.eq(&self.slug),
@@ -116,7 +120,11 @@ impl Jam {
                 start_date.eq(self.start_date),
                 end_date.eq(self.end_date),
                 approval_state.eq(self.approval_state),
-            ))
+            ));
+
+        println!("query: {}", debug_query(&q).to_string());
+
+        q
             .execute(conn)?;
 
         Ok(())

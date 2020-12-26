@@ -29,8 +29,8 @@ pub fn homepage(
     }
 
     let context = Context {
+        jams,
         auth: user.to_context(),
-        jams: jams,
         showing_all_jams: should_show_all_jams,
     };
 

@@ -44,8 +44,8 @@ impl JamContext {
                 .map(|a| AttachmentContext::from_model(&a)),
             rich_text_content: rich_text.content.clone(),
             rendered_rich_text_content: rendered_rich_text_content,
-            start_date: jam.start_date.to_string(),
-            end_date: jam.end_date.to_string(),
+            start_date: jam.start_date.format("%Y-%m-%d").to_string(),
+            end_date: jam.end_date.format("%Y-%m-%d").to_string(),
             approval_state: jam.approval_state.to_human_str(),
         })
     }

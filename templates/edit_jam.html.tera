@@ -3,15 +3,104 @@
 <div class="row">
   <h1>Edit jam</h1>
 </div>
-<div class="row">
-  <div class="col">
-    <form>
-      <div class="mb-3">
-        <label for="jam-title" class="form-label">Title</label>
-        <input type="text" class="form-control" id="jam-title" aria-describedby="jam-title-help" value="{{ jam.title }}"/>
-        <div id="jam-title-help" class="form-text">The title of this Game Jam.</div>
+<form action="/jams/{{ jam.id }}" method="post">
+  <div class="row">
+    <div class="col">
+      <label for="title" class="form-label">Title</label>
+      <input type="text" class="form-control" id="title" name="title"
+        aria-describedby="title-help" value="{{ jam.title }}"/>
+      <div id="title-help" class="form-text">
+        The title of this Game Jam.
       </div>
-    </form>
+    </div>
   </div>
-</div>
+  <div class="row">
+    <div class="col">
+      <label for="slug" class="form-label">Slug</label>
+      <input type="text" class="form-control" id="slug" name="slug"
+        aria-describedby="slug-help" value="{{ jam.slug }}"/>
+      <div id="slug-help" class="form-text">
+        A component of a friendly url, such as the <code>my-jam</code> part of
+        <code>https://www.udevgames.com/jams/1/my-jam</code>.
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <label for="start_date" class="form-label">Start date</label>
+      <input type="text" class="form-control" id="start_date" name="start_date"
+        aria-describedby="start_date-help" value="{{ jam.start_date }}"/>
+      <div id="start_date-help" class="form-text">
+        The date on which the jam starts. YYYY-MM-DD format only.
+      </div>
+    </div>
+    <div class="col">
+      <label for="end_date" class="form-label">End date</label>
+      <input type="text" class="form-control" id="end_date" name="end_date"
+        aria-describedby="end_date-help" value="{{ jam.end_date }}"/>
+      <div id="end_date-help" class="form-text">
+        The date on which the jam ends. YYYY-MM-DD format only.
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <label for="summary" class="form-label">Summary</label>
+      <div id="summary-help" class="form-text">
+        About a paragraph describing the theme of the jam, displayed on index
+        pages.
+      </div>
+      <textarea class="form-control" id="summary" name="summary" rows="3"
+          aria-describedby="summary-help">{{ jam.summary }}</textarea>
+    </div>
+  </div>
+  <!-- TODO: summary attachments. these are images which function as banners for
+             a specific jam. this involves getting all ajaxy with file uploads
+             and stuff. -->
+  <div class="row">
+    <div class="col">
+      <label for="rich_text_content" class="form-label">Description</label>
+      <div id="rich_text_content-help" class="form-text">
+        The rules/theme of this game jam. This is only shown on the detail
+        page for a jam itself, not on the home/index page. You may use
+        Markdown/Commonmark formatting here.
+      </div>
+      <textarea class="form-control" id="rich_text_content"
+          name="rich_text_content" rows="9"
+          aria-describedby="rich_text_content-help"
+      >{{ jam.rich_text_content }}</textarea>
+    </div>
+  </div>
+  <!-- TODO: rich text attachments, which is a super ajaxy list of attached
+             files. -->
+  <div class="row">
+    <div class="col">
+      <label for="jam-approval_state" class="form-label">Approval state</label>
+      <select class="form-select" aria-label="Approval state"
+          name="approval_state" id="jam-approval_state">
+        <option{% if jam.approval_state == "Draft" %} selected{% endif %}
+            value="Draft">
+          Draft
+        </option>
+        <option{% if jam.approval_state == "Submitted" %} selected{% endif %}
+            value="Submitted">
+          Submitted
+        </option>
+        <option{% if jam.approval_state == "Approved" %} selected{% endif %}
+            value="Approved">
+          Approved
+        </option>
+        <option{% if jam.approval_state == "Rejected" %} selected{% endif %}
+            value="Rejected">
+          Rejected
+        </option>
+      </select>
+    </div>
+    <div class="col position-relative">
+      <button type="submit" class="
+        btn btn-primary position-absolute bottom-0 end-0 me-3
+      ">Save</button>
+    </div>
+  </div>
+</form>
 {% endblock %}

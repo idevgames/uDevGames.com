@@ -26,5 +26,5 @@ CREATE TABLE jams(
     -- actors from spamming the site, but in this case is here to allow the
     -- creation of draft jams without prematurely putting something on the
     -- frontpage.
-    approval_state INTEGER CHECK(approval_state IN (0, 1, 2, 5, 8)) NOT NULL DEFAULT 0
+    approval_state INTEGER CHECK(approval_state IN (0, 1, 2, 4, 8)) NOT NULL DEFAULT 0
 );
