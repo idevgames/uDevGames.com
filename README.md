@@ -3,6 +3,14 @@
 This is the code that runs uDevGames.com, a contest website run by the iDevGames
 community.
 
+**ARCHIVAL**
+
+This project is Archived. While we are proud to have a history of self-hosting
+game jams and contests at uDevGames.com, compared to the sophistication of other
+free resources it's really not worthwhile to continue to in-house this facility.
+This repository remains up and available as a historical curiosity, but it isn't
+being actively developed or updated.
+
 ## Developing
 
 To work on this site you need Rust, NodeJS, and a Github OAuth application.
